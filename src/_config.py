@@ -1,6 +1,6 @@
 from pathlib import Path
 
-URL = f"https://pastebin.com/raw/4YJG825M"
+URL = f"INSERT YOUR URL HERE, I USUALLY USE PASTEBIN/RAW"
 
 
 baseDir = Path(__file__).resolve().parent
