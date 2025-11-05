@@ -9,7 +9,7 @@ from net import ligar_desligar
 from _config import DEVICE1, DEVICE2, baseDir
 
 def clear_console():
-    """Limpa o console em Windows, Linux e macOS."""
+    #Limpa o console em Windows, Linux e macOS
     system_name = platform.system()
     if system_name == "Windows":
         os.system("cls")
@@ -113,7 +113,7 @@ class QuizUI:
         columns = urwid.Columns([
             ('weight', 0.5, left_box),
             ('weight', 0.5, right_box)
-        ], dividechars=6)  # << espaçamento aumentado
+        ], dividechars=6)  # << espaçamento entre colunas
 
         # Layout completo
         body = urwid.Pile([
@@ -145,7 +145,6 @@ class QuizUI:
             (f"prompt", "yellow,bold", ""),                # Texto de orientação (amarelo)
             (f"good", "dark green,bold", ""),
             (f"bad", "light red,bold", ""),
-            (f"Divider", "light red,bold", "")
         ]
 
         # Loop principal
