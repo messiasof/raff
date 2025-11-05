@@ -144,7 +144,7 @@ class QuizUI:
             (f"edit_box", "yellow", "black"),              # Campo de resposta (amarelo)
             (f"prompt", "yellow,bold", ""),                # Texto de orientação (amarelo)
             (f"good", "dark green,bold", ""),
-            (f"bad", "light red,bold", ""),
+            (f"bad", "light red,bold", "")
         ]
 
         # Loop principal
