@@ -138,7 +138,7 @@ class QuizUI:
         palette = [
             (f"title", "light magenta,bold", ""),          # R.A.F.F — roxo forte
             (f"subtitle", "dark magenta", ""),             # subtexto — roxo mais escuro
-            (f"section_title", "light magenta,bold", ""),    # Títulos (Pergunta / Explicação)
+            (f"section_title", "light magenta,bold", ""),  # Títulos (Pergunta / Explicação)
             (f"explain_box", "dark gray", ""),             # Texto de explicação (cinza)
             (f"question_box", "white,bold", ""),           # Texto da pergunta (branco)
             (f"edit_box", "yellow", "black"),              # Campo de resposta (amarelo)
