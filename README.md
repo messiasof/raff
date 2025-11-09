@@ -29,8 +29,12 @@ Essa seção ta em construção, a escrita ta simplória.
 
 1. Baixe o projeto
 
-2. Configure o `_config.py` (eu uso PASTEBIN no modo RAW nos URLs)
+2. Entre na pasta raiz do projeto
 
-3. Adicione uma tarefa no task scheduler do Windows
+3. Baixe as dependências com `pip install -r requirements.txt`
 
-4. Adicione os trigger ao seu bel-prazer: eu gosto de usar um a cada 2 horas e outro ao reiniciar o PC
+4. Configure o `_config.py` (eu uso pastebin no modo `Raw` na variável `URL` e `URLCHECK`)
+
+5. Adicione uma tarefa no task scheduler do Windows e configure para ela executar o `_main.py` do projeto
+
+6. Adicione os trigger ao seu bel-prazer: eu gosto de usar um a cada 2 horas e outro ao reiniciar o PC
