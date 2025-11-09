@@ -1,4 +1,13 @@
-sys
+# External Modules (pypi)
 requests
 urwid
-re
+
+# Python Built-in Modules
+    #re
+    #sys
+    #platform
+    #os
+    #subprocess
+    #pathlib
+    #threading
+    #ctypes
