@@ -101,7 +101,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [x] Melhorar o .gitignore
   - [ ] Aviso prévio (x horas ou minutos) antes de executar o código
   - [ ] Melhorar nome dos arquivos
-  - [ ] Finalizar README com introdução, detalhes, instruções, troubleshoot e artigos.
+  - [x] Finalizar README com introdução, detalhes, instruções, troubleshoot e artigos.
   - [ ] Adicionar nome na janela .py (quando executado via processo, tipo `cmd` ou `taskschd`)
   - [ ] Melhorar tratamento de fechamento de janela (Windows)
   - [ ] Melhorar a configuração de adpatadores e limpar o código `net.py`
