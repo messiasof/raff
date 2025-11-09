@@ -4,7 +4,7 @@ import urwid
 import re
 import os
 import platform
-from varfile import editVarFile
+from varfile import editVarFile, editLastValueFile, lastvaluepath
 from net import ligar_desligar
 from _config import DEVICE1, DEVICE2, baseDir
 
@@ -18,9 +18,15 @@ def clear_console():
 
 # -------- Funções de rede e parsing ----------
 def fetch_text(url, timeout=10):
-    r = requests.get(url, timeout=timeout)
-    r.raise_for_status()
-    return r.text
+    try:
+        r = requests.get(url, timeout=timeout)
+        r.raise_for_status()
+        editLastValueFile(r.text)
+        return r.text
+    except:
+        with open(lastvaluepath, "r", encoding="utf-8") as file:
+            r = file.read() #.strip()
+            return r
 
 def parse_entries(text):
     entries = []
