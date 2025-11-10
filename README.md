@@ -90,6 +90,8 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 
 - Cada linha é uma pergunta independente.
 
+- Use `\n` no `EXPLAIN=;` para pular linhas.
+
 ---
 
 # Lista de tarefas (to-do)
