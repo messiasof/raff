@@ -57,9 +57,11 @@ def _parse_lines_as_entries(lines):
             val = m.group(2).strip()
             fields[key] = val
         if 'QUESTION' in fields and 'ANSWER' in fields:
+            explain_text = fields.get('EXPLAIN', '').replace("\\n", "\n")  # Substitui as \n por quebras de linha
+            explain_lines = explain_text.split("\n")
             out.append({
                 'question': fields.get('QUESTION', ''),
-                'explain': fields.get('EXPLAIN', ''),
+                'explain': explain_lines,  # Agora 'explain' será uma lista de linhas
                 'answer': fields.get('ANSWER', '')
             })
     editVarFile("True")
@@ -67,6 +69,7 @@ def _parse_lines_as_entries(lines):
     ligar_desligar(DEVICE2)
     clear_console()
     return out
+
 
 # -------- Interface com urwid ----------
 class QuizUI:
@@ -169,7 +172,8 @@ class QuizUI:
             return
         e = self.entries[self.index]
         self.question.set_text(e['question'])
-        self.explain.set_text(e.get('explain', ''))
+        # Agora passamos uma lista de strings para o urwid.Text
+        self.explain.set_text('\n'.join(e.get('explain', [])))
         self.edit.set_edit_text("")
         self.feedback.set_text(f"Pergunta {self.index+1}/{len(self.entries)}")
 
