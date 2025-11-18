@@ -104,7 +104,8 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [ ] Aviso prévio (x horas ou minutos) antes de executar o código
   - [ ] Melhorar nome dos arquivos
   - [ ] Adicionar splashscreen ASCII-art como loading
-  - [x] Finalizar README com introdução, detalhes, instruções, troubleshoot e artigos.
+  - [x] Finalizar README com introdução, detalhes, instruções
+  - [ ] Adicionar troubleshoot e artigo científico sobre o R.A.F.F (feito por mim) junto com imagens no README.
   - [ ] Adicionar nome na janela .py (quando executado via processo, tipo `cmd` ou `taskschd`)
   - [ ] Melhorar tratamento de fechamento de janela (Windows)
   - [ ] Melhorar a configuração de adpatadores e limpar o código `net.py`
@@ -122,7 +123,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 <br><br>
 
 # Forma de usar até o momento (Windows)
-Essa seção ta em construção, a escrita ta simplória.
+Essa seção está em construção, a escrita é simplória.
 
 1. Baixe o projeto
 
