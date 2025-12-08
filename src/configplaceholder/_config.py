@@ -1,5 +1,5 @@
 # REMOVE THIS IMPORT BELOW
-from _testing import * # <<< Yeah, that one.
+from configplaceholder._testing import * # <<< Yeah, that one.
 # YEP, THAT ONE ABOVE ^^^
 
 from pathlib import Path
@@ -14,6 +14,7 @@ GEMINI_APIKEY = APIKEY
 
 
 baseDir = Path(__file__).resolve().parent # Definindo o caminho do diretório base (src)
+configDir = "configplaceholder"
 
 DEVICE1 = "Ethernet" # Mude para o nome do dispositivo de rede que aparece no netsh / Change to network device's name that appears on netsh command
 DEVICE2 = "Wi-Fi" # Mude para o nome do dispositivo de rede que aparece no netsh / Change to network device's name that appears on netsh command

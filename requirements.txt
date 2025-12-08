@@ -1,6 +1,7 @@
 # External Modules (pypi)
 requests
 urwid
+google
 
 # Python Built-in Modules
     #re
