@@ -104,8 +104,8 @@ def main_program():
         else:
             pass
     except:
-        lastvaluepath = baseDir/".lastcheck"
-        with open(lastvaluepath, "r", encoding="utf-8") as file:
+        lastcheckpath = baseDir/".lastcheck"
+        with open(lastcheckpath, "r", encoding="utf-8") as file:
             r = file.read()
         if r == CHECKCHAR:
             fetch_main(URL)

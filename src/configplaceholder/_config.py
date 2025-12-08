@@ -12,7 +12,7 @@ NAME = STUDENTNAME
 GEMINI_APIKEY = APIKEY
 
 
-
+aiMode = True
 baseDir = Path(__file__).resolve().parent # Definindo o caminho do diretório base (src)
 
 DEVICE1 = "Ethernet" # Mude para o nome do dispositivo de rede que aparece no netsh / Change to network device's name that appears on netsh command

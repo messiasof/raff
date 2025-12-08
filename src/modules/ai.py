@@ -1,14 +1,20 @@
 from datetime import datetime
 from google import genai
+from pathlib import Path
 from src.configplaceholder._config import GEMINI_APIKEY, NAME
+from src.configplaceholder._config import baseDir
+from src.modules.varfile import lastvaluepath
 #feedback_atual = "Queria aprender sobre geografia, não entendo de terrenos"
 
 def AiFeedback():
     client = genai.Client(api_key=GEMINI_APIKEY)
+    lastfeedbackpath = f"{baseDir}\\.lastfeedback"
     mensagem_feedback = "Diga o que você achou, ou o que você quer aprender, o que ficou confuso, o que não ficou, nível de dificuldade, referências, problemas e pode dar o feedback que a IA vai adaptar as perguntas da sua próxima seção!"
-    ultimo_feedback = "..."
     perguntas = "3"
     especial = "Se você for fazer exercicios de matemática, ele precisa saber como faz a conta/operação. Ele precisa saber a fórmula inteira, só não precisa da resposta no EXPLAIN"
+
+    with open(lastfeedbackpath, "r", encoding="utf-8") as file:
+        ultimo_feedback = file.read()
 
     # Essa parte poderia ser de um arquivo de configurações, seria melhor...
     diasDaSemana = {
@@ -33,4 +39,7 @@ def AiFeedback():
          model=aimodel, contents=f"{baseprompt}"
      )
     save = response.text
-    print(save)
+    with open(lastfeedbackpath, "w", encoding="utf-8") as f:
+        f.write(str(feedback_atual))
+    with open(lastvaluepath, "w", encoding="utf-8") as f:
+        f.write(str(save))
