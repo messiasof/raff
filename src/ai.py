@@ -6,6 +6,8 @@ aimodel = "gemini-2.5-flash"
 #baseprompt = f"Meu nome é {NAME}, o último prompt foi" #{LASTPROMPT}
 baseprompt = "Quanto é 1+1?"
 
+# ------------------------------------------------------------------------------------ #
+
 # Mostrar código, README do Github, modelo acima e regras escritas por mim agora
 
 # Sua função é pegar o feedback do aluno e gerar perguntas (no modelo citado acima) para ele fazer na próxima vez
@@ -13,7 +15,10 @@ baseprompt = "Quanto é 1+1?"
 
 # Tem que ser EXATAMENTE igual o modelo de perguntas diz: (instruções)
 # A quantidade de perguntas que você deve fazer é: {perguntas}
-# Esse é o feedback do aluno: {feedback}
+# Esse é o feedback do aluno: {feedback-atual}
+# O prompt da última vez tinha sido: {ultimo-feedback}
+
+# ------------------------------------------------------------------------------------ #
 
 response = client.models.generate_content(
      model=aimodel, contents=f"{baseprompt} ABC"
