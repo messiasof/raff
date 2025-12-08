@@ -1,9 +1,16 @@
+# REMOVE THIS IMPORT BELOW
+from _testing import * # <<< Yeah, that one.
+# YEP, THAT ONE ABOVE ^^^
+
 from pathlib import Path
 
-URL = f""                   # URL onde vai tentar pegar as perguntas, seguindo o padrão QUESTION=text; EXPLAIN=text; ANSWER=text;
-URLCHECK = f""              # URL onde ele vai checar remotamente se é para executar o RAFF ou não (defina frequência de execução/checagem no Task Scheduler)
-RESPONSAVEL = ""            # Nome do responsável pelo estudante
-CHECKCHAR = ""              # Caractere que o programa vai procurar no URLCHECK para servir como "True"
+URL = URLBASE                        # URL onde vai tentar pegar as perguntas, seguindo o padrão QUESTION=text; EXPLAIN=text; ANSWER=text;
+URLCHECK = URLCHECKING               # URL onde ele vai checar remotamente se é para executar o RAFF ou não (defina frequência de execução/checagem no Task Scheduler)
+RESPONSAVEL = TEACHERNAME            # Nome do responsável pelo estudante
+CHECKCHAR = CHAR                     # Caractere que o programa vai procurar no URLCHECK para servir como "True"
+NAME = STUDENTNAME
+GEMINI_APIKEY = APIKEY
+
 
 
 baseDir = Path(__file__).resolve().parent # Definindo o caminho do diretório base (src)
