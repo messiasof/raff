@@ -1,10 +1,12 @@
 import subprocess
 from pathlib import Path
-from _config import baseDir
+from configplaceholder._config import baseDir
 
-varPath = baseDir/"var.txt"
-lastvaluepath = baseDir/".lastvalue"
-lastcheckpath = baseDir/".lastcheck"
+configDir = "configplaceholder"
+
+varPath = baseDir/configDir/"var.txt"
+lastvaluepath = baseDir/configDir/".lastvalue"
+lastcheckpath = baseDir/configDir/".lastcheck"
 
 def editVarFile(value):
     with open(varPath, "w", encoding="utf-8") as f:

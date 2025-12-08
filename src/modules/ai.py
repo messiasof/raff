@@ -1,5 +1,5 @@
 from google import genai
-from _config import GEMINI_APIKEY, NAME
+from configplaceholder._config import GEMINI_APIKEY, NAME
 
 client = genai.Client(api_key=GEMINI_APIKEY)
 aimodel = "gemini-2.5-flash"

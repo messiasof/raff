@@ -4,9 +4,9 @@ import urwid
 import re
 import os
 import platform
-from varfile import editVarFile, editLastValueFile, lastvaluepath
-from net import ligar_desligar
-from _config import DEVICE1, DEVICE2, baseDir
+from modules.varfile import editVarFile, editLastValueFile, lastvaluepath
+from modules.net import ligar_desligar
+from configplaceholder._config import DEVICE1, DEVICE2, baseDir
 
 def clear_console():
     #Limpa o console em Windows, Linux e macOS
@@ -65,8 +65,8 @@ def _parse_lines_as_entries(lines):
                 'answer': fields.get('ANSWER', '')
             })
     editVarFile("True")
-    ligar_desligar(DEVICE1)
-    ligar_desligar(DEVICE2)
+    #ligar_desligar(DEVICE1)
+    #ligar_desligar(DEVICE2)
     clear_console()
     return out
 

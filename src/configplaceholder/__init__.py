@@ -1,0 +1,1 @@
+# Só para virar um package e poder estruturar o projeto melhor
