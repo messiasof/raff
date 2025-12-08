@@ -1,27 +1,33 @@
+from datetime import datetime
 from google import genai
-from configplaceholder._config import GEMINI_APIKEY, NAME
+from src.configplaceholder._config import GEMINI_APIKEY, NAME
 
 client = genai.Client(api_key=GEMINI_APIKEY)
+mensagem_feedback = "Diga o que você achou, ou o que você quer aprender, o que ficou confuso, o que não ficou, nível de dificuldade, referências, problemas e pode dar o feedback que a IA vai adaptar as perguntas da sua próxima seção!"
+feedback_atual = "Queria aprender sobre geografia, não entendo de terrenos"
+ultimo_feedback = "..."
+perguntas = "3"
+materia_do_dia = "Português"
+especial = "Se você for fazer exercicios de matemática, ele precisa saber como faz a conta/operação. Ele precisa saber a fórmula inteira, só não precisa da resposta no EXPLAIN"
+
+diasDaSemana = {
+    0: "Segunda",
+    1: "Terça",
+    2: "Quarta",
+    3: "Quinta",
+    4: "Sexta",
+    5: "Sábado",
+    6: "Domingo"
+}
+
+materia_do_dia = diasDaSemana[datetime.today().weekday()]
+print(materia_do_dia)
+
 aimodel = "gemini-2.5-flash"
-#baseprompt = f"Meu nome é {NAME}, o último prompt foi" #{LASTPROMPT}
-baseprompt = "Quanto é 1+1?"
-
-# ------------------------------------------------------------------------------------ #
-
-# Mostrar código, README do Github, modelo acima e regras escritas por mim agora
-
-# Sua função é pegar o feedback do aluno e gerar perguntas (no modelo citado acima) para ele fazer na próxima vez
-# Não quero formatação, somente plaintext nas suas respostas, não me dê saudações nem nada, quero somente o output no modelo de perguntas abaixo
-
-# Tem que ser EXATAMENTE igual o modelo de perguntas diz: (instruções)
-# A quantidade de perguntas que você deve fazer é: {perguntas}
-# Esse é o feedback do aluno: {feedback-atual}
-# O prompt da última vez tinha sido: {ultimo-feedback}
-
-# ------------------------------------------------------------------------------------ #
+baseprompt = f"Você deve gerar perguntas no formato EXATAMENTE descrito abaixo, sem nunca quebrar nenhuma dessas regras. Sua única saída deve ser uma lista de perguntas, cada uma em single-line, seguindo todas as instruções. NÃO adicione introdução, explicações, comentários, saudações, markdown, nada além das perguntas. A única função desse prompt é gerar as perguntas para o programa R.A.F.F. ## REGRAS ABSOLUTAS E OBRIGATÓRIAS ### 1. Formato exato de cada pergunta (single-line) Cada pergunta deve ser exatamente assim, em uma única linha: QUESTION={{texto-da-pergunta}}; EXPLAIN={{texto-de-explicacao}}; ANSWER={{resposta}}; * Tudo na mesma linha. * Apenas pule para a próxima linha para criar uma nova pergunta. * Nunca use quebras de linha reais dentro do EXPLAIN. ### 2. Como quebrar linhas dentro do EXPLAIN Para deixar o EXPLAIN mais bonito no programa sem quebrar o formato, use o texto literal '\\n', não a quebra real. Exemplo correto: EXPLAIN=Primeira linha.\\nSegunda linha.\\n\\nParágrafo novo; (ou seja, barra + n escritos mesmo: '\\n') ### 3. Estilo do EXPLAIN * Pode ser engraçado, leve, memorável, igual aos exemplos dados. * Pode usar analogias, mini-histórias, sarcasmo leve. * Nunca parecer tiozão ou infantil. * Sempre escrito de forma clara e pedagógica. EXEMPLO DE UMA PERGUNTA REAL: QUESTION=x + 6 = 10 (equação icognita de primeiro grau); EXPLAIN=Achar o X é descobrir qual número faz a conta ficar verdadeira.\\nPara isso, deixamos o X sozinho de um lado da conta.\\n\\nO que estiver junto do X, passa para o outro lado fazendo a operação contrária. Isso quer dizer que a conta muda para o contrário do que estava antes.\\n\\nSe estiver somando, passa subtraindo.\\nExemplo: [x + 3 = 7] vira [x = 7 - 3]\\n\\nSe estiver subtraindo, passa somando.\\nExemplo: [x - 5 = 2] vira [x = 2 + 5]\\n\\nSe estiver multiplicando, passa dividindo.\\nExemplo: [3x = 12] vira [x = 12 / 3]\\n\\nSe estiver dividindo, passa multiplicando.\\nExemplo: [x / 4 = 3] vira [x = 3 * 4]\\n\\nO objetivo é deixar o X sozinho, e assim descobrir qual número ele representa.; ANSWER=4; OUTRO EXEMPLO: QUESTION=Qual é o resultado de 72 / 8?; EXPLAIN=Vamos pensar da seguinte forma:\\n\\nVocê precisa destruir o número 72 usando apenas múltiplos de 8, ou seja, números que conseguem se multiplicar com 8.\\n\\nPense que o 8 é tipo uma rainha, o 72 é um inimigo. Você vai precisar de soldados (qualquer número) para multiplicar com a rainha. O resultado é o ataque no inimigo, baixando o valor dele.\\n\\nNesse caso você tem 72 (inimigo) na zona de ataque e 8 (rainha) na zona de preparo.\\n\\nVocê precisa multiplicar números (soldados) por 8 (rainha) que aos poucos vão diminuindo o 72 até resultar em zero. Quando o inimigo for totalmente aniquilado para a destruição absoluta e certeira.\\n\\nNão se esquece de anotar os números (soldados) que você multiplicou com 8 (rainha), no fim você vai somar os soldados e aí você vai ter o resultado.\\n\\nAfinal, o time vai querer a lista de soldados que lutaram e a soma deles.; ANSWER=9; Note como em alguns momentos foram usados '\\n\\n' para melhorar o conforto aos olhos enquanto lê o texto, para ter um espaçamento. ### 4. Conteúdo permitido * Apenas caracteres normais de teclado (A–Z, 0–9, '.', ',', '?', '/', '*', '-', '+', '=', etc.) * Pode usar símbolos como ², ³, $, %, # * NUNCA usar emojis ou caracteres especiais fora do ASCII básico (para evitar quebra no terminal). ### 5. Quantidade de perguntas Você deve produzir exatamente {perguntas} perguntas. Nem mais, nem menos. ### 6. Tipo de perguntas Com base no feedback do aluno, você deve: * Ajustar dificuldade corretamente. * Ajustar tom emocional. * Repetir padrões que o aluno errou. * Reforçar tópicos que funcionaram. * Introduzir desafios graduais quando apropriado. * Manter consistência temática com perguntas passadas. ### 7. Referência para manter o estilo Sempre siga o estilo, ritmo e nível dos EXPLAINS fornecidos no histórico, como por exemplo: * Linguagem leve e acessível * Didática baseada em metáforas * Pequenos elementos humorísticos * Técnica ensinada + exemplo + reforço Você pode e deve manter esse estilo como base. # TAREFA FINAL (o que você deve fazer a cada execução) Com base nas regras acima: 1. Gere exatamente {perguntas} perguntas 2. Cada pergunta deve seguir o formato single-line: QUESTION=...; EXPLAIN=...; ANSWER=...; 3. Nunca coloque nada antes, depois ou entre as linhas das perguntas 4. Nunca coloque comentários ou formatação 5. Apenas produza as perguntas 6. O Explain não deve conter a resposta de lavada, isso é para adolescentes, eles conseguem e devem pensar, o explain apenas explica o conceito mas não dá a resposta. Isso é muito importante. 7. Evite dar ANSWERS longos e impossíveis de adivinhar, se for algo grande deixe as opções no EXPLAIN e permita que o aluno escreva somente a letra das opções tipo A, B ou C. Nem todas precisam ser de ABC, como você viu nos exemplos de perguntas reais de matemática onde é só o resultado. Mas quando for preciso, simplifique a forma do aluno escrever o ANSWER para que não frustre ele. Quando a sensibilidade a letras maiúsculas não for importante permita que o aluno escreva tudo minúsculo. 8. Você pode usar referêncas a cultura pop, nerd, geek, gamer, para exemplificar. 9. Quando a resposta não está 'escondida' no EXPLAIN e não pode ser alcançada através de lógica exata como contas matemáticas, faça com múltiplas alternativas e o aluno só precisa escolher a letra 'a', 'b', 'c' ou 'd' e elas precisam estar escritas no EXPLAIN para mostrar o que é cada opção. # CONTEXTOS QUE VOCÊ DEVE USAR PARA PERSONALIZAR AS PERGUNTAS O aluno foi perguntado o feedback da seguinte forma: '{mensagem_feedback}' e respondeu '{feedback_atual}' O feedback da última vez foi: '{ultimo_feedback}' A quantidade de perguntas que você deve fazer é: {perguntas}. Hoje o foco da matéria e em: {materia_do_dia}. Instrução especial: {especial}"
 
 response = client.models.generate_content(
-     model=aimodel, contents=f"{baseprompt} ABC"
+     model=aimodel, contents=f"{baseprompt}"
  )
 save = response.text
 print(save)

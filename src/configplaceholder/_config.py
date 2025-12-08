@@ -1,5 +1,5 @@
 # REMOVE THIS IMPORT BELOW
-from configplaceholder._testing import * # <<< Yeah, that one.
+from src.configplaceholder._testing import * # <<< Yeah, that one.
 # YEP, THAT ONE ABOVE ^^^
 
 from pathlib import Path
