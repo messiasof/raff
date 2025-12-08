@@ -4,9 +4,15 @@ import urwid
 import re
 import os
 import platform
+from google import genai
+from datetime import datetime
 from src.modules.varfile import editVarFile, editLastValueFile, lastvaluepath
 from src.modules.net import ligar_desligar
-from src.configplaceholder._config import DEVICE1, DEVICE2, baseDir
+from src.configplaceholder._config import DEVICE1, DEVICE2, NAME, GEMINI_APIKEY
+from src.modules.ai import AiFeedback
+
+class ExitQuiz(Exception):
+    pass
 
 def clear_console():
     #Limpa o console em Windows, Linux e macOS
@@ -195,12 +201,11 @@ class QuizUI:
             self.loop.draw_screen()
 
     def finish(self):
-        txt = urwid.Text(("good", "🎉 Parabéns! Todas as perguntas foram respondidas!\nPressione qualquer tecla para sair."))
+        txt = urwid.Text(("good", "🎉 Parabéns! Todas as perguntas foram respondidas!\nApós o feedback, pressione qualquer tecla para sair."))
         self.loop.widget = urwid.Filler(urwid.Pile([txt]))
         self.loop.unhandled_input = lambda k: (_ for _ in ()).throw(urwid.ExitMainLoop())
         editVarFile("False")
-        ligar_desligar(DEVICE1)
-        ligar_desligar(DEVICE2)
+        raise ExitQuiz()
 
     def run(self):
         self.loop.run()
@@ -225,7 +230,10 @@ def main(arg=None):
         sys.exit(1)
 
     ui = QuizUI(entries)
-    ui.run()
-
-if __name__ == "__main__":
-    main()
+    try:
+        ui.run()
+    except ExitQuiz:
+        ligar_desligar(DEVICE1)
+        ligar_desligar(DEVICE2)
+        clear_console()
+        AiFeedback()
