@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from configplaceholder._config import baseDir
+from src.configplaceholder._config import baseDir
 
 varPath = baseDir/"var.txt" # Define o caminho para o var.txt
 

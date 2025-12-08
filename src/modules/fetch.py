@@ -4,9 +4,9 @@ import urwid
 import re
 import os
 import platform
-from modules.varfile import editVarFile, editLastValueFile, lastvaluepath
-from modules.net import ligar_desligar
-from configplaceholder._config import DEVICE1, DEVICE2, baseDir
+from src.modules.varfile import editVarFile, editLastValueFile, lastvaluepath
+from src.modules.net import ligar_desligar
+from src.configplaceholder._config import DEVICE1, DEVICE2, baseDir
 
 def clear_console():
     #Limpa o console em Windows, Linux e macOS

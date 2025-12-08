@@ -2,9 +2,9 @@ import requests
 import ctypes
 import sys
 import threading
-from modules.fetch import main as fetch_main
-from configplaceholder._config import URL, URLCHECK, baseDir, RESPONSAVEL, CHECKCHAR
-from modules.varfile import editLastCheckFile
+from src.modules.fetch import main as fetch_main
+from src.configplaceholder._config import URL, URLCHECK, baseDir, RESPONSAVEL, CHECKCHAR
+from src.modules.varfile import editLastCheckFile
 
 ####################################################################################
 #              HANDLER PARA CRIAR CONFIRMAÇÃO DE FECHAMENTO DE JANELA              #
