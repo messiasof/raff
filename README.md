@@ -108,7 +108,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [ ] Adicionar troubleshoot e artigo científico sobre o R.A.F.F (feito por mim) junto com imagens no README.
   - [ ] Adicionar nome na janela .py (quando executado via processo, tipo `cmd` ou `taskschd`)
   - [ ] Melhorar tratamento de fechamento de janela (Windows)
-  - [ ] Melhorar a configuração de adpatadores e limpar o código `net.py`
+  - [X] Melhorar a configuração de adpatadores e limpar o código `net.py`
   - [ ] Se não tiver .lastcheck e .lastvalue, criar
   - [x] Adicionar IA para otimizar estudos
   - [ ] Usar env-vars para se livrar do `_config.py`
