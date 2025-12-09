@@ -1,7 +1,7 @@
 # External Modules (pypi)
 requests
 urwid
-google
+google-genai
 
 # Python Built-in Modules
     #re
