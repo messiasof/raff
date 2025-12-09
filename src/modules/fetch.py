@@ -242,3 +242,4 @@ def main(arg=None):
         ligar_desligar(DEVICE2)
         clear_console()
         AiFeedback()
+        sys.exit(0)
