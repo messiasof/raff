@@ -76,8 +76,8 @@ def _parse_lines_as_entries(lines):
                 'answer': fields.get('ANSWER', '')
             })
     editVarFile("True")
-    #ligar_desligar(DEVICE1)
-    #ligar_desligar(DEVICE2)
+    ligar_desligar(DEVICE1)
+    ligar_desligar(DEVICE2)
     clear_console()
     return out
 
