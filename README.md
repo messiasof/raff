@@ -136,6 +136,6 @@ Essa seção está em construção, a escrita é simplória.
 
 4. Configure o `_config.py` (eu uso pastebin no modo `Raw` na variável `URL` e `URLCHECK`)
 
-5. Adicione uma tarefa no task scheduler do Windows e configure para ela executar o `_main.py` do projeto
+5. Adicione uma tarefa no task scheduler do Windows e configure para ela executar o `_main.py` do projeto com os argumentos `python -m src.main`
 
 6. Adicione os trigger ao seu bel-prazer: eu gosto de usar um a cada 2 horas e outro ao reiniciar o PC
