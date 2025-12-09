@@ -112,6 +112,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [ ] Se não tiver .lastcheck e .lastvalue, criar
   - [x] Adicionar IA para otimizar estudos
   - [ ] Usar env-vars para se livrar do `_config.py`
+  - [ ] Preparar fallback para esgotamento de créditos da IA (Gemini) e não deixar o PC travado sem internet
 
 <br>
 
