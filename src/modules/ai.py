@@ -1,7 +1,7 @@
 from datetime import datetime
 from google import genai
 from pathlib import Path
-from src.configplaceholder._config import GEMINI_APIKEY, NAME
+from src.configplaceholder._config import GEMINI_APIKEY, NAME, WEEKDAY0, WEEKDAY1, WEEKDAY2, WEEKDAY3, WEEKDAY4, WEEKDAY5, WEEKDAY6
 from src.configplaceholder._config import baseDir
 from src.modules.varfile import lastvaluepath
 #feedback_atual = "Queria aprender sobre geografia, não entendo de terrenos"
@@ -18,13 +18,13 @@ def AiFeedback():
 
     # Essa parte poderia ser de um arquivo de configurações, seria melhor...
     diasDaSemana = {
-        0: "Português",
-        1: "Português",
-        2: "Matemática",
-        3: "Matemática",
-        4: "Matemática",
-        5: "Inglês",
-        6: "Inglês"
+        0: WEEKDAY0,
+        1: WEEKDAY1,
+        2: WEEKDAY2,
+        3: WEEKDAY3,
+        4: WEEKDAY4,
+        5: WEEKDAY5,
+        6: WEEKDAY6
     }
     if diasDaSemana[datetime.today().weekday()<=6]:
         materia_do_dia = diasDaSemana[datetime.today().weekday()+1]
