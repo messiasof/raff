@@ -102,7 +102,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [x] Adicionar comentários mais úteis e claros
   - [x] Melhorar o .gitignore
   - [ ] Aviso prévio (x horas ou minutos) antes de executar o código
-  - [ ] Melhorar nome dos arquivos
+  - [x] Melhorar nome dos arquivos
   - [ ] Adicionar splashscreen ASCII-art como loading
   - [x] Finalizar README com introdução, detalhes, instruções
   - [ ] Adicionar troubleshoot e artigo científico sobre o R.A.F.F (feito por mim) junto com imagens no README.
@@ -110,7 +110,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [ ] Melhorar tratamento de fechamento de janela (Windows)
   - [ ] Melhorar a configuração de adpatadores e limpar o código `net.py`
   - [ ] Se não tiver .lastcheck e .lastvalue, criar
-  - [ ] Adicionar IA para otimizar estudos
+  - [x] Adicionar IA para otimizar estudos
   - [ ] Usar env-vars para se livrar do `_config.py`
 
 <br>
