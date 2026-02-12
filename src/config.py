@@ -5,19 +5,18 @@ Carrega variáveis de ambiente do arquivo .env
 
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-# Carrega o .env da raiz do projeto
-ROOT_DIR = Path(__file__).resolve().parent.parent
-ENV_PATH = ROOT_DIR / ".env"
+# Busca o .env automaticamente (subindo diretórios até encontrar)
+dotenv_path = find_dotenv(usecwd=True)
 
-if ENV_PATH.exists():
-    load_dotenv(ENV_PATH)
+if dotenv_path:
+    load_dotenv(dotenv_path)
+    print(f"✅ Configurações carregadas de: {dotenv_path}")
 else:
-    raise FileNotFoundError(
-        f"Arquivo .env não encontrado em {ENV_PATH}.\n"
-        "Por favor, copie o .env.example para .env e configure suas variáveis."
-    )
+    print("⚠️  Nenhum arquivo .env encontrado.")
+    print("Usando variáveis de ambiente do sistema ou valores padrão.")
+    print(f"Crie um .env em: {Path.cwd()}")
 
 # URLs de controle
 URL_QUESTIONS = os.getenv("URL_QUESTIONS")
@@ -56,5 +55,6 @@ AI_QUESTIONS_COUNT = int(os.getenv("AI_QUESTIONS_COUNT", "3"))
 MAX_FEEDBACKS = int(os.getenv("MAX_FEEDBACKS", "10"))
 
 # Diretórios
+ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
