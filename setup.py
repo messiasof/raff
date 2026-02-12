@@ -2,7 +2,11 @@ from setuptools import setup, find_packages
 
 # Lê requirements.txt automaticamente
 with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
+    requirements = [
+        line.strip() 
+        for line in f 
+        if line.strip() and not line.strip().startswith("#") # Segurança caso no futuro o comportamento do line.strip() mude e quebre a lógica
+    ]
 
 setup(
     name="raff",
