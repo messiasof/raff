@@ -34,7 +34,7 @@ Esse projeto nasceu do cuidado de um irmão e de bons princípios de design para
 
 - Persistência local de fallback em `.lastvalue `(perguntas) e `.lastcheck` (último estado do controle).
 
-- Extensível e facilmente configurável via `_config.py`.
+- Extensível e facilmente configurável via `.env`.
 
 ## Técnicas e princípios pedagógicos aplicados
 
@@ -54,9 +54,9 @@ Um pouco de literatura pedagógica e decidi focar nos seguintes pontos durante a
 
 ## Como funciona — visão técnica (fluxo)
 
-O script faz um fetch no URL de checagem (definido em `_config.py`) para verificar se está liberado executar.
+O script faz um fetch no URL de checagem (definido em `.env`) para verificar se está liberado executar.
 
-Se o conteúdo coincidir com o valor esperado (também no `_config.py`), o script faz outro fetch no URL de perguntas e baixa as questões.
+Se o conteúdo coincidir com o valor esperado (também no `.env`), o script faz outro fetch no URL de perguntas e baixa as questões.
 
 Tanto o conteúdo da checagem quanto das perguntas são guardados localmente:
 
@@ -94,6 +94,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 
 # Lista de tarefas (to-do)
 - [ ] **Tarefas ainda para a V1/MVP** (essa)
+  - [ ] Atualizar e melhorar o README para a última refatoração
   - [x] Adicionar fallback para uso offline em caso de erros
   - [x] Adicionar tratamentos de erros
   - [x] Melhorar a estrutura do _config.py
