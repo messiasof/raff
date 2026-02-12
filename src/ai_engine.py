@@ -32,7 +32,7 @@ def collect_feedback() -> str:
     print("\n" + "=" * 70)
     print("FEEDBACK DA SESSÃO")
     print("=" * 70)
-    print("\nDiga o que você achou da sessão de estudos!")
+    print("\nDiga o que você achou da sessão de estudos de ontem?")
     print("Você pode falar sobre:")
     print("  • O que aprendeu ou quer aprender")
     print("  • O que ficou confuso ou claro")
