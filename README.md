@@ -3,8 +3,6 @@
 
 Uma ferramenta simples, pensada e feita com carinho para ajudar meu irmão Rafael e outras pessoas neurodivergentes a transformar a saída para a internet em uma recompensa por aprendizado. O objetivo não é “controlar” ninguém, e sim oferecer um fluxo de estudos previsível, supervisionado e configurável, respeitando o ambiente favorito do aluno: o computador.
 
-Se você quiser pular direto para a parte de como usar, [clique nesse link.](#forma-de-usar-até-o-momento-windows)
-
 ## Resumo técnico 
 Script Python que busca perguntas em um URL remoto, apresenta-as numa interface CLI minimalista (feito com urwid), bloqueia adaptadores de rede até as perguntas serem respondidas corretamente e persiste um fallback local para evitar perda de conteúdo caso a internet (ou o script) caia.
 
@@ -105,21 +103,24 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
   - [x] Melhorar nome dos arquivos
   - [ ] Adicionar splashscreen ASCII-art como loading
   - [x] Finalizar README com introdução, detalhes, instruções
-  - [ ] Adicionar troubleshoot e artigo científico sobre o R.A.F.F (feito por mim) junto com imagens no README.
+  - [ ] Adicionar troubleshoot e artigo científico sobre o R.A.F.F (feito por mim) junto com imagens no README
   - [ ] Adicionar nome na janela .py (quando executado via processo, tipo `cmd` ou `taskschd`)
-  - [ ] Melhorar tratamento de fechamento de janela (Windows)
-  - [X] Melhorar a configuração de adpatadores e limpar o código `net.py`
-  - [ ] Se não tiver .lastcheck e .lastvalue, criar
+  - [x] Melhorar tratamento de fechamento de janela (Windows)
+  - [x] Melhorar a configuração de adaptadores e limpar o código `net.py`
+  - [x] Se não tiver .lastcheck e .lastvalue, criar automaticamente
   - [x] Adicionar IA para otimizar estudos
-  - [ ] Usar env-vars para se livrar do `_config.py`
+  - [x] Usar env-vars para se livrar do `_config.py`
+  - [x] Sistema de acumulação de feedbacks (últimos X feedbacks)
+  - [x] Refatoração completa da estrutura do projeto
+  - [x] Correção do problema de repetição de perguntas
   - [ ] Preparar fallback para esgotamento de créditos da IA (Gemini) e não deixar o PC travado sem internet
 
 <br>
 
 - [ ] **Tarefas para a V2/RELEASE**
   - [ ] Criar uma versão instalável para Windows
-  - [ ] Melhorar o sistema do var.txt (ou me livrar dele)
-  - [ ] Implementar a versão GUI com customização de usuário (sons, imagens) usando o `.config`
+  - [x] Melhorar o sistema do var.txt (removido, agora usa .network_state)
+  - [ ] Implementar a versão GUI com customização de usuário (sons, imagens)
   - [ ] Tirar a necessidade do uso do Task Scheduler do Windows (restart + periódico)
   - [ ] Criação de uma API
   - [ ] Criação de um website para o projeto
@@ -127,16 +128,45 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 <br><br>
 
 # Forma de usar até o momento (Windows)
-Essa seção está em construção, a escrita é simplória.
+
+## Instalação
 
 1. Baixe o projeto
 
 2. Entre na pasta raiz do projeto
 
-3. Baixe as dependências com `pip install -r requirements.txt`
+3. Instale as dependências:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4. Configure o `_config.py` (eu uso pastebin no modo `Raw` na variável `URL` e `URLCHECK`)
+4. Configure o arquivo `.env`:
+   - Copie o arquivo `.env.example` para `.env`
+   - Edite o `.env` e preencha suas configurações:
+     - `URL_QUESTIONS`: URL onde estão as perguntas (ex: Pastebin no modo Raw)
+     - `URL_CHECK`: URL para verificar se deve executar
+     - `CHECK_CHAR`: Caractere que indica execução (ex: "1")
+     - `GEMINI_API_KEY`: Sua chave da API do Gemini
+     - `STUDENT_NAME`: Nome do estudante
+     - `TEACHER_NAME`: Nome do responsável
+     - `NETWORK_DEVICE_1` e `NETWORK_DEVICE_2`: Nomes dos adaptadores de rede (veja com `netsh interface show interface`)
+     - Configure as matérias por dia da semana (Segunda=0, Domingo=6)
+     - `AI_MODE`: True para usar IA, False para usar perguntas remotas
+     - `AI_QUESTIONS_COUNT`: Quantidade de perguntas a serem geradas
+     - `MAX_FEEDBACKS`: Quantidade de feedbacks a armazenar
 
-5. Adicione uma tarefa no task scheduler do Windows e configure para ela executar `python -m src.main` e inicializar dentro do diretório raiz do projeto
+5. **Teste a instalação:**
+   ```bash
+   python test_setup.py
+   ```
+   Este script verifica se tudo está configurado corretamente.
 
-6. Adicione os trigger ao seu bel-prazer: eu gosto de usar um a cada 2 horas em intensivos antes de provas importantes e sempre as 16h00 em dias normais. E outro trigger ao reiniciar o PC
+6. Adicione uma tarefa no Task Scheduler do Windows:
+   - Configurar para executar: `python -m src.main`
+   - Diretório inicial: pasta raiz do projeto
+   - Executar com privilégios de administrador (necessário para controlar adaptadores de rede)
+
+7. Configure os triggers conforme sua necessidade:
+   - Exemplo: A cada 2 horas durante período de estudos
+   - Exemplo: Sempre às 16h00 em dias normais
+   - Exemplo: Ao reiniciar o PC

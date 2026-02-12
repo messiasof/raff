@@ -1,122 +1,127 @@
-import requests
+"""
+R.A.F.F - Rotina de Aprendizado Focada e Flexível
+Ponto de entrada principal da aplicação
+"""
+
 import ctypes
 import sys
-import threading
-from src.modules.fetch import main as fetch_main
-from src.configplaceholder._config import URL, URLCHECK, baseDir, RESPONSAVEL, CHECKCHAR
-from src.modules.varfile import editLastCheckFile
 
-####################################################################################
-#              HANDLER PARA CRIAR CONFIRMAÇÃO DE FECHAMENTO DE JANELA              #
-####################################################################################
+from src.config import TEACHER_NAME
 
-# Necessário manter referência global para evitar GC da função handler
+
+# ==========================================
+# HANDLER DE FECHAMENTO DE JANELA (WINDOWS)
+# ==========================================
+
 _handler_ref = None
 
-# Tipos para SetConsoleCtrlHandler
 HandlerRoutine = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_uint)
 
-# Eventos
+# Eventos de console
 CTRL_C_EVENT = 0
 CTRL_BREAK_EVENT = 1
 CTRL_CLOSE_EVENT = 2
 CTRL_LOGOFF_EVENT = 5
 CTRL_SHUTDOWN_EVENT = 6
 
-def _show_confirm_message():
+
+def show_close_confirmation():
     """
-    Exibe MessageBox nativo do Windows com 'Sim' e 'Não'.
-    Retorna True se o usuário clicar em 'Sim' (quer fechar), False se clicar 'Não'.
+    Mostra MessageBox nativo do Windows perguntando se realmente quer fechar.
+    
+    Returns:
+        True se o usuário confirmar o fechamento, False caso contrário
     """
     MB_ICONWARNING = 0x30
     MB_YESNO = 0x04
     IDYES = 6
-    # Mensagem conforme seu pedido
-    texto = (f"Você pode acabar travando o PC e precisando chamar o {RESPONSAVEL} para destravar "
-             "se tentar fechar a janela, tem certeza?")
-    titulo = "R.A.F.F: Atenção!"
-    res = ctypes.windll.user32.MessageBoxW(0, texto, titulo, MB_ICONWARNING | MB_YESNO)
-    return res == IDYES
+    
+    text = (
+        f"Você pode acabar travando o PC e precisando chamar o {TEACHER_NAME} "
+        "para destravar se tentar fechar a janela, tem certeza?"
+    )
+    title = "R.A.F.F: Atenção!"
+    
+    result = ctypes.windll.user32.MessageBoxW(0, text, title, MB_ICONWARNING | MB_YESNO)
+    return result == IDYES
 
-def _console_handler(dwCtrlType):
+
+def console_handler(dwCtrlType):
     """
     Handler chamado pelo Windows quando um evento de console acontece.
-    Retorna True se o evento for 'tratado' (ou seja, não deixa o Windows encerrar o processo).
-    Retorna False para permitir que o sistema prossiga com o encerramento.
+    
+    Returns:
+        True se o evento for tratado (bloqueia o fechamento)
+        False para permitir o fechamento
     """
-    # Ctrl+C/Ctrl+Break/fechamento da janela.
     if dwCtrlType == CTRL_CLOSE_EVENT:
-        # X (fechar janela).
+        # Usuário tentou fechar a janela
         try:
-            # Bloqueia até o usuário responder.
-            fechar = _show_confirm_message()
+            should_close = show_close_confirmation()
         except Exception:
-            # Se a MessageBox falhar por algum motivo, não impedir o fechamento
             return False
-
-        if fechar:
-            # Usuário confirmou que quer fechar
-            return False  # NÃO trata: permite término normal
+        
+        if should_close:
+            return False  # Permite fechar
         else:
-            # CANCELOU: trata tentativa e não deixa fechar o RAFF
-            return True
-
+            return True  # Bloqueia o fechamento
+    
     if dwCtrlType in (CTRL_C_EVENT, CTRL_BREAK_EVENT):
-        # Pra configurar conforme o uso: tratar Ctrl+C/Ctrl+Break da mesma forma (ou simplesmente ignorar)
+        # Ctrl+C ou Ctrl+Break
         try:
-            fechar = _show_confirm_message()
+            should_close = show_close_confirmation()
         except Exception:
-            return True  # ignorar por segurança
-
-        if fechar:
+            return True
+        
+        if should_close:
             return False
         else:
             return True
-
-    # Para shutdown/logoff - o PC pode ficar travado esperando o programa finalizar. Opcional se você quiser algo mais rígido.
+    
+    # Shutdown/Logoff - permite para não travar o sistema
     if dwCtrlType in (CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT):
         return False
-
-    # Default: não tratar
+    
     return False
 
-def install_console_close_confirmation():
-    """Instala o handler de console (Windows)."""
+
+def install_close_handler():
+    """Instala o handler de fechamento de console (Windows)."""
     global _handler_ref
-    # cria a função com o tipo esperado e guarda referência global
-    _handler_ref = HandlerRoutine(_console_handler)
-    ok = ctypes.windll.kernel32.SetConsoleCtrlHandler(_handler_ref, True)
-    if not ok:
-        print("Aviso: falha ao instalar o handler do console (SetConsoleCtrlHandler).")
-
-
-####################################################################################
-#                                 SETUP E EXECUÇÃO                                 #
-####################################################################################
-
-def main_program():
+    
     try:
-        r = requests.get(URLCHECK, timeout=10)
-        r.raise_for_status()
-        editLastCheckFile(r.text)
-        if r.text == CHECKCHAR:
-            fetch_main(URL)
-        else:
-            pass
-    except:
-        lastcheckpath = baseDir/".lastcheck"
-        with open(lastcheckpath, "r", encoding="utf-8") as file:
-            r = file.read()
-        if r == CHECKCHAR:
-            fetch_main(URL)
-        else:
-            pass
+        _handler_ref = HandlerRoutine(console_handler)
+        success = ctypes.windll.kernel32.SetConsoleCtrlHandler(_handler_ref, True)
+        
+        if not success:
+            print("⚠ Aviso: Não foi possível instalar o handler de fechamento.")
+    except Exception as e:
+        print(f"⚠ Aviso: Erro ao instalar handler de fechamento: {e}")
+
+
+# ==========================================
+# MAIN
+# ==========================================
+
+def main():
+    """Função principal."""
+    # Instala o handler de fechamento (apenas Windows)
+    if sys.platform == "win32":
+        install_close_handler()
+    
+    # Importa e executa a aplicação
+    try:
+        from src.app import main as app_main
+        app_main()
+    except KeyboardInterrupt:
+        print("\n\nPrograma interrompido pelo usuário.")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ Erro fatal: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    # Aviso: O handler só será chamado quando houver tentativa de encerramento
-    try:
-        main_program()
-    except Exception as e:
-        print("Erro:", e)
-        raise
+    main()

@@ -2,14 +2,9 @@
 requests
 urwid
 google-genai
+python-dotenv
 
 # Python Built-in Modules
-    #re
-    #sys
-    #platform
-    #os
-    #subprocess
-    #pathlib
-    #threading
-    #ctypes
-    #datetime
+#   re, sys, platform, os, subprocess
+#   pathlib, threading, ctypes, datetime
+#   typing, json

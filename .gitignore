@@ -1,9 +1,26 @@
 # Python bytecode
 __pycache__/
-.IGNORED/
 *.pyc
-#*.lastvalue
-#*.lastcheck
+
+# Diretórios ignorados
+.IGNORED/
+.settings/
+
+# Arquivos de ambiente
+.env
+
+# Arquivos de persistência local
+.lastvalue
+.lastcheck
+.lastfeedback
+.network_state
+.feedbacks.json
+/data
+
+# Arquivos temporários
+var.txt
+
+# Arquivos de desenvolvimento
 _testing.py
 finalprompt.txt
 prompt.txt
