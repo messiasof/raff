@@ -94,7 +94,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 
 # Lista de tarefas (to-do)
 - [ ] **Tarefas ainda para a V1/MVP** (essa)
-  - [ ] Atualizar e melhorar o README para a última refatoração
+  - [ ] Atualizar e melhorar o README para a última refatoração + CLI
   - [x] Adicionar fallback para uso offline em caso de erros
   - [x] Adicionar tratamentos de erros
   - [x] Melhorar a estrutura do _config.py
@@ -137,9 +137,18 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 2. Entre na pasta raiz do projeto
 
 3. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
-   ```
+
+Se você quiser usar comandos de CLI como `raff start`, então:
+```bash
+pip install .
+```
+
+Mas se você só quiser as dependências pra rodar, então:
+```bash
+pip install -r requirements.txt
+```
+
+Não existe problema em executar ambos comandos. As dependências dos dois são sincronizadas automaticamente.
 
 4. Configure o arquivo `.env`:
    - Copie o arquivo `.env.example` para `.env`
@@ -158,7 +167,7 @@ QUESTION=2+2; EXPLAIN=Operação de soma simples; ANSWER=4;
 
 5. **Teste a instalação:**
    ```bash
-   python test_setup.py
+   python healthcheck.py
    ```
    Este script verifica se tudo está configurado corretamente.
 

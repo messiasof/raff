@@ -3,6 +3,7 @@ requests
 urwid
 google-genai
 python-dotenv
+setuptools
 
 # Python Built-in Modules
 #   re, sys, platform, os, subprocess
