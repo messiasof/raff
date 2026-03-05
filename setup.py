@@ -15,7 +15,7 @@ setup(
     package_dir={"": "."},
     entry_points={
         "console_scripts": [
-            "raff=src.cli.commands:main",
+            "raff=src.cli.commands:mainCLI",
         ],
     },
     install_requires=requirements,
