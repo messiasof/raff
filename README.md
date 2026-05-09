@@ -5,6 +5,7 @@ Uma ferramenta simples, pensada e feita com carinho para ajudar meu irmão Rafae
 
 ## Resumo técnico 
 Script Python que busca perguntas em um URL remoto, apresenta-as numa interface CLI minimalista (feito com urwid), bloqueia adaptadores de rede até as perguntas serem respondidas corretamente e persiste um fallback local para evitar perda de conteúdo caso a internet (ou o script) caia.
+Antes de iniciar a atividade, o app pode exibir um aviso nativo do Windows configurável no `.env`. Ao terminar, ele também pode tocar um som opcional e tenta restaurar a rede automaticamente se o processo for encerrado.
 
 ## Por que isso importa?
 
@@ -33,6 +34,8 @@ Esse projeto nasceu do cuidado de um irmão e de bons princípios de design para
 - Bloqueio/reativação de adaptadores de rede configurável por sistema.
 
 - Persistência local de fallback em `.lastvalue `(perguntas) e `.lastcheck` (último estado do controle).
+
+- Aviso prévio nativo do Windows e som opcional de conclusão via `.env`.
 
 - Extensível e facilmente configurável via `.env`.
 
@@ -164,6 +167,8 @@ Não existe problema em executar ambos comandos. As dependências dos dois são 
      - `AI_MODE`: True para usar IA, False para usar perguntas remotas
      - `AI_QUESTIONS_COUNT`: Quantidade de perguntas a serem geradas
      - `MAX_FEEDBACKS`: Quantidade de feedbacks a armazenar
+     - `START_WARNING_ENABLED` e `START_WARNING_TITLE`: controla o aviso nativo do Windows
+     - `COMPLETE_SOUND_PATH`: caminho opcional para som de conclusão. Recomendado usar `.wav`
 
 5. **Teste a instalação:**
    ```bash
@@ -180,3 +185,17 @@ Não existe problema em executar ambos comandos. As dependências dos dois são 
    - Exemplo: A cada 2 horas durante período de estudos
    - Exemplo: Sempre às 16h00 em dias normais
    - Exemplo: Ao reiniciar o PC
+
+8. Se quiser personalizar o aviso, use o comando `warn`:
+   ```bash
+   python -m src.warn "Daqui 15 minutos a atividade vai começar"
+   ```
+   Ou via CLI (se instalou com `pip install .`):
+   ```bash
+   raff warn "Sua mensagem aqui"
+   ```
+   Configure uma tarefa no Task Scheduler para executar isso em horários específicos:
+   ```
+   python -m src.warn "Atividade em 15 minutos: prepare a mente!"
+   ```
+   Assim você pode ter vários avisos em horários diferentes sem precisar alterar nada no `.env`.

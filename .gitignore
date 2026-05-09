@@ -27,3 +27,8 @@ var.txt
 _testing.py
 finalprompt.txt
 prompt.txt
+
+# Arquivos personalizáveis (comente se não quiser ignorar)
+*.wav
+*.mp3
+.ogg

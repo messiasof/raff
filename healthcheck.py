@@ -71,7 +71,8 @@ def test_env():
         from src.config import (
             STUDENT_NAME, TEACHER_NAME, GEMINI_API_KEY,
             URL_QUESTIONS, URL_CHECK, CHECK_CHAR,
-            AI_MODE, NETWORK_DEVICE_1, NETWORK_DEVICE_2
+            AI_MODE, NETWORK_DEVICE_1, NETWORK_DEVICE_2,
+            START_WARNING_ENABLED, COMPLETE_SOUND_PATH,
         )
         print(f"  ✅ Configurações carregadas:")
         print(f"     - Aluno: {STUDENT_NAME}")
@@ -79,6 +80,14 @@ def test_env():
         print(f"     - Modo IA: {AI_MODE}")
         print(f"     - Adaptador 1: {NETWORK_DEVICE_1}")
         print(f"     - Adaptador 2: {NETWORK_DEVICE_2}")
+        print(f"     - Aviso prévio: {START_WARNING_ENABLED}")
+
+        if COMPLETE_SOUND_PATH:
+            sound_path = Path(COMPLETE_SOUND_PATH)
+            if sound_path.exists():
+                print(f"     - Som de conclusão: {sound_path}")
+            else:
+                print(f"  ⚠️  COMPLETE_SOUND_PATH definido, mas o arquivo não existe: {sound_path}")
         
         if not GEMINI_API_KEY or GEMINI_API_KEY == "sua_api_key_aqui" or GEMINI_API_KEY == "cole_sua_api_key_aqui":
             print("  ⚠️  GEMINI_API_KEY não configurada (necessária para modo IA)")

@@ -3,18 +3,28 @@ Módulo principal da aplicação
 Contém a lógica de execução do R.A.F.F
 """
 
+import ctypes
 import re
-import requests
-import platform
 import os
+import platform
+from pathlib import Path
 from typing import List, Dict
 
-from src.config import URL_QUESTIONS, URL_CHECK, CHECK_CHAR, AI_MODE
+import requests
+
+from src.config import (
+    URL_QUESTIONS,
+    URL_CHECK,
+    CHECK_CHAR,
+    AI_MODE,
+    COMPLETE_SOUND_PATH,
+)
 from src.storage import (
     get_last_questions,
     save_last_questions,
     get_last_check,
     save_last_check,
+    get_network_state,
 )
 from src.network import disable_network, enable_network
 from src.ui import QuizUI
@@ -47,6 +57,26 @@ def fetch_remote_content(url: str, timeout: int = 10) -> str:
     r = requests.get(url, timeout=timeout)
     r.raise_for_status()
     return r.text
+
+
+def play_completion_sound() -> None:
+    """Toca um som opcional ao terminar a atividade."""
+    if not COMPLETE_SOUND_PATH or platform.system() != "Windows":
+        return
+
+    sound_path = Path(COMPLETE_SOUND_PATH).expanduser()
+    if not sound_path.exists():
+        return
+
+    try:
+        import winsound
+
+        winsound.PlaySound(
+            str(sound_path),
+            winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT,
+        )
+    except Exception:
+        pass
 
 
 def should_run_quiz() -> bool:
@@ -147,6 +177,9 @@ def on_quiz_complete():
     """Callback chamado quando o quiz é completado."""
     # Reabilita a rede
     enable_network()
+
+    # Som opcional de conclusão
+    play_completion_sound()
     
     # Limpa o console
     clear_console()
@@ -159,9 +192,14 @@ def on_quiz_complete():
 def run_quiz():
     """
     Executa o quiz completo.
-    Desabilita a rede, mostra as perguntas, e reabilita ao finalizar.
+    Coleta feedback, gera perguntas com internet ON,
+    depois desabilita rede e executa o quiz.
     """
-    # Obtém as perguntas
+    # FASE 1: Coleta feedback e gera perguntas (REDE ON)
+    print("\n" + "=" * 70)
+    print("FASE 1: Coleta de Feedback e Geração de Perguntas")
+    print("=" * 70)
+    
     questions_text = get_questions()
     
     if not questions_text:
@@ -174,16 +212,31 @@ def run_quiz():
     if not questions:
         print("❌ Erro: Nenhuma pergunta válida encontrada.")
         return
+
+    # FASE 2: Bloqueio de rede
+    print("\n" + "=" * 70)
+    print("FASE 2: Preparação da Sessão")
+    print("=" * 70)
     
     # Desabilita a rede antes de começar
-    disable_network()
+    network_disabled = disable_network()
+    if not network_disabled:
+        print("❌ Não foi possível desabilitar totalmente a rede.")
+        print("A sessão foi encerrada para evitar deixar o estado inconsistente.")
+        enable_network()
+        return
     
     # Limpa o console
     clear_console()
     
-    # Cria e executa a interface
-    ui = QuizUI(questions, on_complete=on_quiz_complete)
-    ui.run()
+    # FASE 3: Executa quiz (REDE OFF)
+    try:
+        # Cria e executa a interface
+        ui = QuizUI(questions, on_complete=on_quiz_complete)
+        ui.run()
+    finally:
+        if get_network_state():
+            enable_network()
 
 
 def main():

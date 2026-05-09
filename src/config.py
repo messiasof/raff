@@ -33,6 +33,15 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # Modo IA
 AI_MODE = os.getenv("AI_MODE", "True").lower() in ("true", "1", "yes")
 
+# Aviso prévio antes de iniciar a atividade
+START_WARNING_ENABLED = os.getenv("START_WARNING_ENABLED", "True").lower() in ("true", "1", "yes")
+START_WARNING_TITLE = os.getenv("START_WARNING_TITLE", "R.A.F.F")
+# Mensagem padrão para aviso interno (durante quiz)
+# Para mensagens customizadas, use: python -m src.warn "Sua mensagem aqui"
+
+# Som de conclusão
+COMPLETE_SOUND_PATH = os.getenv("COMPLETE_SOUND_PATH", "").strip()
+
 # Adaptadores de rede
 NETWORK_DEVICE_1 = os.getenv("NETWORK_DEVICE_1", "Ethernet")
 NETWORK_DEVICE_2 = os.getenv("NETWORK_DEVICE_2", "Wi-Fi")

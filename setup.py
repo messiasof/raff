@@ -10,12 +10,13 @@ with open("requirements.txt") as f:
 
 setup(
     name="raff",
-    version="1.2.0",
+    version="1.3.0",
     packages=find_packages(where="."),
     package_dir={"": "."},
     entry_points={
         "console_scripts": [
             "raff=src.cli.commands:mainCLI",
+            "raff-warn=src.warn:main",
         ],
     },
     install_requires=requirements,

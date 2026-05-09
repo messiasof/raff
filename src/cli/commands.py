@@ -24,6 +24,10 @@ def mainCLI():
     # PARSER | start
     subparsers.add_parser("start", help="Inicia o Raff")
     subparsers.add_parser("test", help="Testa o Raff")
+    
+    # PARSER | warn
+    warn_parser = subparsers.add_parser("warn", help="Exibe um aviso customizado")
+    warn_parser.add_argument("message", nargs="?", default="Aviso do R.A.F.F", help="Mensagem do aviso")
 
 # -----------------------------------------------------------------------------------------------------------------
     args = parser.parse_args()
@@ -32,6 +36,9 @@ def mainCLI():
         run()
     elif args.command == "test":
         test()
+    elif args.command == "warn":
+        from src.warn import show_warning
+        show_warning(args.message)
     #elif args.command == "stop":
     #    stop()
     else:
