@@ -32,3 +32,4 @@ prompt.txt
 *.wav
 *.mp3
 .ogg
+**/raff*-plan.md
