@@ -18,14 +18,15 @@ jobs:
         uses: actions/checkout@v4
 
       # ---------------------------------------------------------------
-      # Lê o .raffver e monta o título + corpo do PR
+      # Lê o .raffver e grava título + corpo em arquivos temporários
+      # (evita qualquer interpolação de aspas no shell)
       # ---------------------------------------------------------------
-      - name: Ler .raffver e montar descrição do PR
-        id: raffver
+      - name: Ler .raffver e gravar arquivos de título e corpo
         shell: python
         run: |
           import os
           import re
+          import textwrap
 
           with open(".raffver", "r", encoding="utf-8") as f:
               conteudo = f.read()
@@ -54,13 +55,13 @@ jobs:
           titulo_raw = campos.get("TITLE", "").strip().strip('"\'').strip()
           titulo = f'"{titulo_raw}"' if titulo_raw else '""'
 
-          # Nome da release (igual ao release.yml)
+          # Nome formatado
           if eh_nightly:
               nome_release = f"[{versao} NIGHTLY] {titulo}"
           else:
               nome_release = f"[{versao}] {titulo}"
 
-          # Itens do log (abaixo do divisor)
+          # Itens do log
           itens = []
           if indice_divisor is not None:
               for linha in linhas[indice_divisor + 1:]:
@@ -73,33 +74,27 @@ jobs:
                   if linha:
                       itens.append(f"* {linha}")
 
-          corpo = "\n".join(itens) if itens else "* Sem notas de versão ainda."
+          corpo_lista = "\n".join(itens) if itens else "* Sem notas de versão ainda."
 
-          pr_titulo = nome_release
-
-          pr_corpo = f"""\
+          pr_corpo = textwrap.dedent(f"""\
           ## {nome_release}
 
           ### O que muda nessa versão
 
-          {corpo}
+          {corpo_lista}
 
           ---
           > Descrição gerada automaticamente a partir do `.raffver`. Edite o arquivo para atualizar.
-          """
+          """)
 
-          # Dedenta (remove espaços à esquerda da heredoc)
-          import textwrap
-          pr_corpo = textwrap.dedent(pr_corpo)
+          # Grava em arquivos — sem passar nada pelo shell
+          with open("/tmp/pr_titulo.txt", "w", encoding="utf-8") as f:
+              f.write(nome_release)
 
-          delimitador = "RAFF_PR_BODY_EOF"
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as saida:
-              saida.write(f"pr_titulo={pr_titulo}\n")
-              saida.write(f"pr_corpo<<{delimitador}\n")
-              saida.write(pr_corpo + "\n")
-              saida.write(f"{delimitador}\n")
+          with open("/tmp/pr_corpo.md", "w", encoding="utf-8") as f:
+              f.write(pr_corpo)
 
-          print(f"Título do PR: {pr_titulo}")
+          print(f"Título: {nome_release}")
           print(f"Corpo:\n{pr_corpo}")
 
       # ---------------------------------------------------------------
@@ -134,8 +129,8 @@ jobs:
           gh pr create \
             --base main \
             --head develop \
-            --title "${{ steps.raffver.outputs.pr_titulo }}" \
-            --body "${{ steps.raffver.outputs.pr_corpo }}"
+            --title "$(cat /tmp/pr_titulo.txt)" \
+            --body-file /tmp/pr_corpo.md
 
       # ---------------------------------------------------------------
       # Atualiza o PR existente (título + corpo) a cada novo commit
@@ -146,5 +141,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr edit "${{ steps.checar_pr.outputs.numero }}" \
-            --title "${{ steps.raffver.outputs.pr_titulo }}" \
-            --body "${{ steps.raffver.outputs.pr_corpo }}"
+            --title "$(cat /tmp/pr_titulo.txt)" \
+            --body-file /tmp/pr_corpo.md
