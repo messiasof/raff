@@ -1,48 +1,91 @@
-# 🧠 R.A.F.F — Rotina de Aprendizado e Foco Familiar
+# 🧠 R.A.F.F
+*Rotina de Aprendizado e Foco Familiar.*
 
-<p align="center">
-  <b>Aplicação Windows nativa para suporte e rotina de foco no aprendizado</b><br>
-  Construída especialmente para estudantes neurodivergentes e no espectro autista.
-</p>
+Uma ferramenta simples, pensada e feita com carinho para ajudar meu irmão Rafael e outras pessoas neurodivergentes a transformar a saída para a internet em uma recompensa por aprendizado. O objetivo não é "controlar" ninguém, e sim oferecer um fluxo de estudos previsível, supervisionado e configurável, respeitando o ambiente favorito do aluno: o computador.
 
 ---
 
-## 🎯 Sobre o Projeto
+## Por que isso importa?
 
-Criar uma rotina de estudos consistente para pessoas autistas exige paciência, previsibilidade e estratégias claras. Muitas vezes, a transição abrupta entre momentos de lazer (como jogos ou vídeos) e momentos de foco pode gerar sobrecarga sensorial e frustração.
+Viver com autismo frequentemente implica rotinas rígidas e preferências sensoriais. Para muitas pessoas, o computador é um ambiente seguro e reiterador. A intenção é usar isso como vantagem pedagógica. Criei o R.A.F.F porque queria uma solução prática para ajudar o Rafael a:
 
-O **R.A.F.F** foi desenvolvido para transformar esse processo em algo **previsível, amigável e comemorativo**:
-- 🔔 **Aviso Prévio Suave**: Notificações toast nativas no Windows avisam antes da atividade começar para permitir que o estudante salve seus jogos ou trabalhos.
-- 🔒 **Foco com Segurança**: Gestão temporária da rede durante a sessão para evitar distrações.
-- 🧩 **Quiz Acessível e Adaptativo**: Interface limpa em PyQt6, com explicação pedagógica detalhada e celebrações sonoras personalizáveis.
-- 🛡️ **Painel do Responsável Protegido**: Controle de matérias, horários e banco de questões protegido por criptografia e senha de administrador.
+- Se adaptar aos estudos de forma progressiva e controlada por mim, podendo adaptar as perguntas do dia ao emocional dele.
+
+- Garantir que ele crie um hábito saudável no ambiente que ele mais gosta, o computador. De forma que não seja imponente, agressiva ou frustrante.
+
+- Manter conteúdo apresentado de forma limpa, sem sobrecarga sensorial.
+
+- Evitar "trapaças" simples (reiniciar/fechar o computador) graças à persistência do último conjunto de questões.
 
 ---
 
-## ✨ Funcionalidades da Versão 2.0
+Esse projeto nasceu do cuidado de um irmão e de bons princípios de design para educação: previsibilidade, feedback claro, reforço positivo e personalização por parte do tutor que controla as perguntas do dia.
 
-- **System Tray Permanente**: Roda na bandeja do Windows em segundo plano, sem necessidade de agendadores externos.
-- **Banco Local de Questões (Offline)**: Cadastro completo de perguntas e explicações via interface gráfica.
-- **Inteligência Artificial (Google Gemini)**: Geração dinâmica de perguntas adaptadas às dificuldades e histórico pedagógico (com fallback automático e seguro).
-- **Notificações Toast Modernas**: Alertas visuais e sonoros integrados ao Windows 10/11.
-- **API REST Local/LAN**: Monitoramento e controle remoto por responsáveis conectados à mesma rede.
-- **Instalador MSI e Versão Portátil**: Facilidade de instalação e início automático com o sistema.
+---
+
+## Técnicas e princípios pedagógicos aplicados
+
+Nem só de programação vive o dev, haha!
+
+Um pouco de literatura pedagógica e decidi focar nos seguintes pontos durante a concepção dessa solução, traduzido a educação no que eu faço de melhor: **Criar coisas.**
+
+- **Reforço positivo**: acesso restaurado + mensagem de parabéns ao completar.
+
+- **Previsibilidade e rotina**: comportamento determinístico. Se as respostas estiverem corretas, a consequência é conhecida.
+
+- **Minimização de sobrecarga sensorial**: interface limpa em PyQt6, sem animações ou sons intrusivos — mas com sons comemorativos opcionais e personalizáveis pelo próprio estudante.
+
+- **Supervisão e consentimento**: projetado para ser usado com acompanhamento quando apropriado; configurações críticas exigem senha do responsável e ficam criptografadas.
+
+- **Fallback resiliente**: persistência local para evitar perda de conteúdo e reduzir frustração — inclusive quando a IA ou a internet ficam indisponíveis.
+
+---
+
+## Principais características
+
+- **System Tray Permanente**: roda na bandeja do Windows em segundo plano, sem precisar do Task Scheduler. Inicia com o sistema operacional.
+- **Banco Local de Questões (Offline)**: o responsável cadastra perguntas e explicações pela interface gráfica. Funciona sem internet.
+- **Inteligência Artificial (Google Gemini)**: geração dinâmica de perguntas adaptadas às dificuldades e ao histórico pedagógico do estudante, com fallback automático e seguro para o banco local.
+- **Aviso Prévio Suave**: notificações toast nativas no Windows X minutos antes da sessão, para o estudante salvar o jogo ou terminar o que está fazendo.
+- **Painel do Responsável Protegido**: controle de matérias, horários, questões e adaptadores de rede — protegido por senha criptografada sem recuperação. O estudante não consegue modificar nada crítico.
+- **Personalização pelo Estudante**: som de vitória, imagem de fundo e cor do tema — tudo configurável livremente sem precisar de senha.
+- **API REST Local/LAN**: monitoramento e controle remoto pelo responsável via navegador ou aplicativo na mesma rede.
+- **Instalador MSI e Versão Portátil**: instalação tradicional com atalho no menu iniciar, ou pasta `.zip` sem instalação.
 
 ---
 
 ## 🚀 Como Executar
 
-### 1. Requisitos
+### Requisitos
 - Windows 10 ou 11 (64-bit)
-- Python 3.8+ (caso execute a partir do código-fonte)
+- Python 3.8+ (apenas para execução a partir do código-fonte)
 
-### 2. Executando o R.A.F.F
+### Executando a partir do código-fonte
+
 ```bash
-# Iniciar a aplicação na bandeja do sistema
-raff gui
+# 1. Clone o repositório
+git clone https://github.com/seu-usuario/messias-autismhelper.git
+cd messias-autismhelper
 
-# Ou iniciar diretamente uma sessão de quiz
+# 2. Instale as dependências
+pip install -r requirements.txt
+pip install -e .
+
+# 3. Inicie o R.A.F.F
 raff start
+```
+
+### Comandos disponíveis
+
+```bash
+raff start              # Inicia a aplicação com interface gráfica (padrão)
+raff start --headless   # Inicia em modo terminal, sem GUI
+raff gui                # Alias para raff start
+raff warn "mensagem"    # Envia uma notificação de aviso
+raff api                # Inicia o servidor da API REST
+raff config             # Abre a janela de configurações
+raff healthcheck        # Verifica a instalação
+raff --version          # Exibe a versão
 ```
 
 ---
@@ -55,6 +98,7 @@ raff start
 - [Guia do Responsável](docs/uso-responsavel.md)
 - [Documentação da API REST](docs/api.md)
 - [Guia de Desenvolvimento](docs/desenvolvimento.md)
+- [Funcionalidades Legadas e Stubs](docs/stubs.md)
 
 ---
 
