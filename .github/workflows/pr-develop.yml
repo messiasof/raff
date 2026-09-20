@@ -9,13 +9,8 @@ jobs:
   pr:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      pull-requests: write
-
     env:
-      # Usa o PAT se disponível, senão cai no GITHUB_TOKEN padrão
-      GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.RAFF_PAT }}
 
     steps:
       - name: Fazer checkout do repositório
