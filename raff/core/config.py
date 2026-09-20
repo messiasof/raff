@@ -37,7 +37,7 @@ AI_MODE = os.getenv("AI_MODE", "True").lower() in ("true", "1", "yes")
 START_WARNING_ENABLED = os.getenv("START_WARNING_ENABLED", "True").lower() in ("true", "1", "yes")
 START_WARNING_TITLE = os.getenv("START_WARNING_TITLE", "R.A.F.F")
 # Mensagem padrão para aviso interno (durante quiz)
-# Para mensagens customizadas, use: python -m src.warn "Sua mensagem aqui"
+# Para mensagens customizadas, use: python -m raff.warn "Sua mensagem aqui"
 
 # Som de conclusão
 COMPLETE_SOUND_PATH = os.getenv("COMPLETE_SOUND_PATH", "").strip()

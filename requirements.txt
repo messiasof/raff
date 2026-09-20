@@ -4,6 +4,15 @@ urwid
 google-genai
 python-dotenv
 setuptools
+PyQt6
+fastapi
+uvicorn
+cryptography
+bcrypt
+win11toast
+pyinstaller
+cx_Freeze
+pytest
 
 # Python Built-in Modules
 #   re, sys, platform, os, subprocess

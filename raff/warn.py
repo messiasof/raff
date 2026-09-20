@@ -1,7 +1,7 @@
 """
 Módulo de aviso prévio desacoplado
 Pode ser executado independentemente para mostrar avisos customizados
-Uso: python -m src.warn "Sua mensagem aqui"
+Uso: python -m raff.warn "Sua mensagem aqui"
 Ou via CLI: raff warn "Sua mensagem aqui"
 """
 
@@ -11,7 +11,7 @@ import ctypes
 import platform
 from pathlib import Path
 
-from src.config import START_WARNING_ENABLED, START_WARNING_TITLE
+from raff.core.config import START_WARNING_ENABLED, START_WARNING_TITLE
 
 
 def show_warning(message: str) -> None:

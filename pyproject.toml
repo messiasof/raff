@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raff"
+version = "2.0.0"
+description = "Rotina de Aprendizado e Foco Familiar — Aplicação Windows nativa para suporte e rotina de foco"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "requests",
+    "urwid",
+    "google-genai",
+    "python-dotenv",
+    "PyQt6",
+    "fastapi",
+    "uvicorn",
+    "cryptography",
+    "bcrypt",
+    "win11toast",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pyinstaller",
+    "cx_Freeze",
+]
+
+[project.scripts]
+raff = "raff.cli.commands:mainCLI"
+raff-warn = "raff.warn:main"

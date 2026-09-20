@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 import json
 
-from src.config import DATA_DIR
+from raff.core.config import DATA_DIR
 
 # Arquivos de persistência
 LASTVALUE_PATH = DATA_DIR / ".lastvalue"

@@ -61,7 +61,7 @@ def main():
         install_close_prevention()
         
         # Importa e executa a aplicação
-        from src.app import main as app_main
+        from raff.core.app import main as app_main
         app_main()
         
     except KeyboardInterrupt:

@@ -1,6 +1,6 @@
 """
 Script de teste para validar a instalação do R.A.F.F
-Execute: python test_setup.py
+Execute: python healthcheck.py
 """
 
 import sys
@@ -11,42 +11,42 @@ def test_imports():
     print("🔍 Testando imports...")
     
     try:
-        from src import config
+        from raff.core import config
         print("  ✅ config.py")
     except Exception as e:
         print(f"  ❌ config.py - {e}")
         return False
     
     try:
-        from src import storage
+        from raff.core import storage
         print("  ✅ storage.py")
     except Exception as e:
         print(f"  ❌ storage.py - {e}")
         return False
     
     try:
-        from src import network
+        from raff.core import network
         print("  ✅ network.py")
     except Exception as e:
         print(f"  ❌ network.py - {e}")
         return False
     
     try:
-        from src import ai_engine
+        from raff.core import ai_engine
         print("  ✅ ai_engine.py")
     except Exception as e:
         print(f"  ❌ ai_engine.py - {e}")
         return False
     
     try:
-        from src import ui
+        from raff.core import ui
         print("  ✅ ui.py")
     except Exception as e:
         print(f"  ❌ ui.py - {e}")
         return False
     
     try:
-        from src import app
+        from raff.core import app
         print("  ✅ app.py")
     except Exception as e:
         print(f"  ❌ app.py - {e}")
@@ -61,14 +61,14 @@ def test_env():
     
     env_path = Path(".env")
     if not env_path.exists():
-        print("  ❌ Arquivo .env não encontrado!")
-        print("  ℹ️  Copie .env.example para .env e configure")
-        return False
+        print("  ⚠️  Arquivo .env não encontrado!")
+        print("  ℹ️  Copie .env.example para .env se desejar rodar em modo desenvolvimento")
+        return True
     
     print("  ✅ Arquivo .env encontrado")
     
     try:
-        from src.config import (
+        from raff.core.config import (
             STUDENT_NAME, TEACHER_NAME, GEMINI_API_KEY,
             URL_QUESTIONS, URL_CHECK, CHECK_CHAR,
             AI_MODE, NETWORK_DEVICE_1, NETWORK_DEVICE_2,
@@ -103,7 +103,7 @@ def test_data_dir():
     print("\n🔍 Testando diretório de dados...")
     
     try:
-        from src.config import DATA_DIR
+        from raff.core.config import DATA_DIR
         if DATA_DIR.exists():
             print(f"  ✅ Diretório existe: {DATA_DIR}")
         else:
@@ -174,7 +174,7 @@ def main():
     
     if all_passed:
         print("\n🎉 Todos os testes passaram! O R.A.F.F está pronto para uso.")
-        print("\nPara executar: python -m src.main")
+        print("\nPara executar: python -m raff.core.main")
         return 0
     else:
         print("\n⚠️  Alguns testes falharam. Corrija os problemas acima.")

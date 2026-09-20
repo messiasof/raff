@@ -246,5 +246,5 @@ def run_ai_feedback_flow() -> str:
     except Exception as e:
         print(f"❌ Erro ao gerar perguntas: {e}")
         print("Usando perguntas anteriores...\n")
-        from src.storage import get_last_questions
+        from raff.core.storage import get_last_questions
         return get_last_questions()
