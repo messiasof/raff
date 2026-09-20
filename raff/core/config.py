@@ -1,69 +1,72 @@
 """
 Módulo de configuração do R.A.F.F
-Carrega variáveis de ambiente do arquivo .env
+Centraliza todas as variáveis de ambiente e preferências do sistema.
 """
 
 import os
 from pathlib import Path
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
 
-# Busca o .env automaticamente (subindo diretórios até encontrar)
-dotenv_path = find_dotenv(usecwd=True)
+# Carrega variáveis de ambiente do .env se existir
+load_dotenv()
 
-if dotenv_path:
-    load_dotenv(dotenv_path)
-    print(f"✅ Configurações carregadas de: {dotenv_path}")
-else:
-    print("⚠️  Nenhum arquivo .env encontrado.")
-    print("Usando variáveis de ambiente do sistema ou valores padrão.")
-    print(f"Crie um .env em: {Path.cwd()}")
+# Diretórios
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+ASSETS_DIR = BASE_DIR / "raff" / "gui" / "assets"
 
-# URLs de controle
-URL_QUESTIONS = os.getenv("URL_QUESTIONS")
-URL_CHECK = os.getenv("URL_CHECK")
-CHECK_CHAR = os.getenv("CHECK_CHAR")
-
-# Informações pessoais
+# Configurações do Aluno e Responsável
 STUDENT_NAME = os.getenv("STUDENT_NAME", "Estudante")
 TEACHER_NAME = os.getenv("TEACHER_NAME", "Responsável")
 
-# API da IA
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-# Modo IA
+# Modos de Operação
 AI_MODE = os.getenv("AI_MODE", "True").lower() in ("true", "1", "yes")
+AI_FALLBACK_TO_LOCAL = os.getenv("AI_FALLBACK_TO_LOCAL", "True").lower() in ("true", "1", "yes")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
-# Aviso prévio antes de iniciar a atividade
+# URLs Legadas / Stubs (Mantidas para retrocompatibilidade)
+URL_QUESTIONS = os.getenv("URL_QUESTIONS", "")
+URL_CHECK = os.getenv("URL_CHECK", "")
+CHECK_CHAR = os.getenv("CHECK_CHAR", "")
+
+# Quantidade de perguntas
+AI_QUESTIONS_COUNT = int(os.getenv("AI_QUESTIONS_COUNT", "5"))
+MAX_FEEDBACKS = int(os.getenv("MAX_FEEDBACKS", "10"))
+
+# Horários e Agendamento
+SCHEDULED_TIMES_RAW = os.getenv("SCHEDULED_TIMES", "10:00,15:00")
+SCHEDULED_TIMES = [
+    (int(t.split(":")[0]), int(t.split(":")[1]))
+    for t in SCHEDULED_TIMES_RAW.split(",")
+    if ":" in t
+]
+
+# Avisos (Toast Notifications)
 START_WARNING_ENABLED = os.getenv("START_WARNING_ENABLED", "True").lower() in ("true", "1", "yes")
-START_WARNING_TITLE = os.getenv("START_WARNING_TITLE", "R.A.F.F")
-# Mensagem padrão para aviso interno (durante quiz)
-# Para mensagens customizadas, use: python -m raff.warn "Sua mensagem aqui"
+START_WARNING_MINUTES = int(os.getenv("START_WARNING_MINUTES", "5"))
+START_WARNING_TITLE = os.getenv("START_WARNING_TITLE", "R.A.F.F — Aviso de Foco")
+START_WARNING_SOUND = os.getenv("START_WARNING_SOUND", "True").lower() in ("true", "1", "yes")
 
-# Som de conclusão
-COMPLETE_SOUND_PATH = os.getenv("COMPLETE_SOUND_PATH", "").strip()
+# Som de Conclusão
+default_sound = ASSETS_DIR / "michael-jackson-hee-hee.wav"
+COMPLETE_SOUND_PATH = os.getenv("COMPLETE_SOUND_PATH", str(default_sound) if default_sound.exists() else "")
 
-# Adaptadores de rede
-NETWORK_DEVICE_1 = os.getenv("NETWORK_DEVICE_1", "Ethernet")
-NETWORK_DEVICE_2 = os.getenv("NETWORK_DEVICE_2", "Wi-Fi")
+# Adaptadores de Rede
+NETWORK_DEVICE_1 = os.getenv("NETWORK_DEVICE_1", "Wi-Fi")
+NETWORK_DEVICE_2 = os.getenv("NETWORK_DEVICE_2", "Ethernet")
 
 # Matérias por dia da semana
 WEEKDAYS = {
     0: os.getenv("WEEKDAY_0", "Português"),
-    1: os.getenv("WEEKDAY_1", "Português"),
-    2: os.getenv("WEEKDAY_2", "Matemática"),
-    3: os.getenv("WEEKDAY_3", "Matemática"),
-    4: os.getenv("WEEKDAY_4", "Matemática"),
-    5: os.getenv("WEEKDAY_5", "Inglês"),
-    6: os.getenv("WEEKDAY_6", "Inglês"),
+    1: os.getenv("WEEKDAY_1", "Matemática"),
+    2: os.getenv("WEEKDAY_2", "Ciências"),
+    3: os.getenv("WEEKDAY_3", "História"),
+    4: os.getenv("WEEKDAY_4", "Geografia"),
+    5: os.getenv("WEEKDAY_5", "Revisão Geral"),
+    6: os.getenv("WEEKDAY_6", "Descanso ou Conhecimentos Gerais"),
 }
 
-# Quantidade de perguntas
-AI_QUESTIONS_COUNT = int(os.getenv("AI_QUESTIONS_COUNT", "3"))
-
-# Quantidade máxima de feedbacks
-MAX_FEEDBACKS = int(os.getenv("MAX_FEEDBACKS", "10"))
-
-# Diretórios
-ROOT_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
+# Configurações da API REST
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_PORT = int(os.getenv("API_PORT", "8765"))
