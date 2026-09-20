@@ -6,8 +6,8 @@ Controla habilitação/desabilitação de adaptadores de rede
 import subprocess
 from typing import List
 
-from src.config import NETWORK_DEVICE_1, NETWORK_DEVICE_2
-from src.storage import save_network_state
+from raff.core.config import NETWORK_DEVICE_1, NETWORK_DEVICE_2
+from raff.core.storage import save_network_state
 
 
 def _run_command(command: List[str]) -> bool:
@@ -68,7 +68,7 @@ def disable_network() -> bool:
         toggle_network_adapter(NETWORK_DEVICE_1, False),
         toggle_network_adapter(NETWORK_DEVICE_2, False),
     ]
-    save_network_state(disabled=any(results))
+    save_network_state(blocked=any(results))
     return all(results)
 
 
@@ -78,7 +78,7 @@ def enable_network() -> bool:
         toggle_network_adapter(NETWORK_DEVICE_1, True),
         toggle_network_adapter(NETWORK_DEVICE_2, True),
     ]
-    save_network_state(disabled=False)
+    save_network_state(blocked=False)
     return all(results)
 
 

@@ -8,8 +8,8 @@ import sys
 import time
 from threading import Thread
 
-from src.network import enable_network, disable_network
-from src.storage import get_network_state, save_network_state
+from raff.core.network import enable_network, disable_network
+from raff.core.storage import get_network_state, save_network_state
 
 
 def restore_network_if_needed():

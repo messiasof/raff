@@ -11,9 +11,10 @@ import uvicorn
 from raff.core.config import API_HOST, API_PORT, STUDENT_NAME, TEACHER_NAME
 from raff.core.security import verify_admin_password
 from raff.core.storage import (
-    get_local_questions, add_local_question, get_stats, get_feedbacks, add_feedback
+    get_local_questions, add_local_question, get_stats, get_feedbacks, add_feedback,
+    get_network_state,
 )
-from raff.core.network import get_network_state, enable_network, disable_network
+from raff.core.network import enable_network, disable_network
 
 app = FastAPI(
     title="R.A.F.F REST API",

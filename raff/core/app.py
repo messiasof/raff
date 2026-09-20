@@ -1,59 +1,40 @@
 """
 Módulo principal da aplicação
-Contém a lógica de execução do R.A.F.F
+Contém a lógica de orquestração do R.A.F.F
 """
 
-import ctypes
-import re
 import os
 import platform
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-import requests
-
-from src.config import (
+from raff.core.config import (
     URL_QUESTIONS,
     URL_CHECK,
     CHECK_CHAR,
     AI_MODE,
     COMPLETE_SOUND_PATH,
 )
-from src.storage import (
+from raff.core.storage import (
     get_last_questions,
     save_last_questions,
     get_last_check,
     save_last_check,
     get_network_state,
+    get_local_questions,
 )
-from src.network import disable_network, enable_network
-from src.ui import QuizUI
-from src.ai_engine import run_ai_feedback_flow
+from raff.core.network import disable_network, enable_network
+from raff.core.ai_engine import run_ai_feedback_flow, generate_questions, get_fallback_questions
 
 
 def clear_console():
     """Limpa o console em Windows, Linux e macOS."""
-    system_name = platform.system()
-    if system_name == "Windows":
-        os.system("cls")
-    else:
-        os.system("clear")
+    os.system("cls" if platform.system() == "Windows" else "clear")
 
 
 def fetch_remote_content(url: str, timeout: int = 10) -> str:
-    """
-    Faz fetch de conteúdo remoto.
-    
-    Args:
-        url: URL para fazer o fetch
-        timeout: Timeout em segundos
-    
-    Returns:
-        Conteúdo baixado
-    
-    Raises:
-        Exception: Se falhar ao baixar
-    """
+    """Faz fetch de conteúdo remoto."""
+    import requests
     r = requests.get(url, timeout=timeout)
     r.raise_for_status()
     return r.text
@@ -63,14 +44,11 @@ def play_completion_sound() -> None:
     """Toca um som opcional ao terminar a atividade."""
     if not COMPLETE_SOUND_PATH or platform.system() != "Windows":
         return
-
     sound_path = Path(COMPLETE_SOUND_PATH).expanduser()
     if not sound_path.exists():
         return
-
     try:
         import winsound
-
         winsound.PlaySound(
             str(sound_path),
             winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT,
@@ -81,157 +59,128 @@ def play_completion_sound() -> None:
 
 def should_run_quiz() -> bool:
     """
-    Verifica se o quiz deve ser executado baseado no check remoto.
-    
-    Returns:
-        True se deve executar, False caso contrário
+    Verifica se o quiz deve ser executado.
+    Se URL_CHECK estiver configurado, consulta remotamente.
+    Caso contrário, retorna True (sem controle remoto).
     """
+    if not URL_CHECK:
+        return True
     try:
-        # Tenta fazer fetch do check remoto
         check_value = fetch_remote_content(URL_CHECK)
         save_last_check(check_value)
         return check_value.strip() == CHECK_CHAR.strip()
     except Exception:
-        # Se falhar, usa o último check salvo
         last_check = get_last_check()
+        if not last_check:
+            return True
         return last_check.strip() == CHECK_CHAR.strip()
 
 
-def get_questions() -> str:
+def get_questions() -> List[Dict]:
     """
-    Obtém as perguntas para o quiz.
-    Se AI_MODE estiver ativado, usa IA. Caso contrário, faz fetch remoto.
-    
-    Returns:
-        String com as perguntas no formato correto
+    Obtém questões com a seguinte prioridade:
+    1. Gemini AI (se AI_MODE=True e chave configurada)
+    2. Questões locais cadastradas
+    3. URL remota (stub legado, se URL_QUESTIONS configurado)
+    4. Cache da última sessão
+    5. Banco de emergência interno
     """
     if AI_MODE:
-        # Modo IA: gera perguntas com feedback
         try:
             return run_ai_feedback_flow()
         except Exception as e:
-            print(f"Erro ao usar IA: {e}")
-            print("Usando perguntas anteriores...\n")
-            return get_last_questions()
-    else:
-        # Modo remoto: faz fetch das perguntas
+            print(f"Aviso: IA indisponível ({e}). Usando fallback local...")
+
+    # Questões locais cadastradas
+    local = get_local_questions()
+    if local:
+        return local
+
+    # URL remota legada (stub)
+    if URL_QUESTIONS:
         try:
-            questions_text = fetch_remote_content(URL_QUESTIONS)
-            save_last_questions(questions_text)
-            return questions_text
+            import re
+            text = fetch_remote_content(URL_QUESTIONS)
+            parsed = parse_text_questions(text)
+            if parsed:
+                save_last_questions(parsed)
+                return parsed
         except Exception:
-            # Se falhar, usa as últimas perguntas salvas
-            return get_last_questions()
+            pass
+
+    # Cache da última sessão
+    cached = get_last_questions()
+    if cached:
+        return cached
+
+    # Banco de emergência
+    return get_fallback_questions()
 
 
-def parse_questions(text: str) -> List[Dict]:
+def parse_text_questions(text: str) -> List[Dict]:
     """
-    Faz parse das perguntas do formato texto para lista de dicionários.
-    
-    Formato esperado:
-    QUESTION=texto; EXPLAIN=texto; ANSWER=texto;
-    
-    Args:
-        text: Texto com as perguntas
-    
-    Returns:
-        Lista de dicionários com 'question', 'explain', 'answer'
+    Faz parse do formato legado de questões (Pastebin).
+    Formato: QUESTION=texto; EXPLAIN=texto; ANSWER=texto;
     """
+    import re
     questions = []
-    
-    # Remove linhas vazias e processa
     raw_lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-    
-    # Junta tudo e divide por QUESTION=
     full_text = " ".join(raw_lines)
     parts = re.split(r'(?=QUESTION=)', full_text, flags=re.IGNORECASE)
-    
+
     for part in parts:
         part = part.strip()
         if not part:
             continue
-        
-        # Extrai os campos
         fields = {}
         for match in re.finditer(r'([A-Z]+)\s*=(.*?)\s*(?:;|$)', part, flags=re.IGNORECASE):
             key = match.group(1).strip().upper()
             value = match.group(2).strip()
             fields[key] = value
-        
-        # Valida que tem os campos necessários
+
         if 'QUESTION' in fields and 'ANSWER' in fields:
-            # Processa o EXPLAIN (converte \\n em quebras de linha reais)
             explain_text = fields.get('EXPLAIN', '').replace("\\n", "\n")
-            explain_lines = explain_text.split("\n")
-            
             questions.append({
-                'question': fields['QUESTION'],
-                'explain': explain_lines,
-                'answer': fields['ANSWER']
+                'pergunta': fields['QUESTION'],
+                'opcoes': [fields['ANSWER']],
+                'resposta_correta': 0,
+                'explicacao': explain_text,
+                'materia': 'Geral',
             })
-    
     return questions
 
 
 def on_quiz_complete():
-    """Callback chamado quando o quiz é completado."""
-    # Reabilita a rede
+    """Callback chamado quando o quiz é completado no modo headless."""
     enable_network()
-
-    # Som opcional de conclusão
     play_completion_sound()
-    
-    # Limpa o console
     clear_console()
-    
     print("\n" + "=" * 70)
-    print("✅ Quiz completado! Internet reabilitada.")
+    print("Parabéns! Quiz concluído com sucesso. Internet reabilitada.")
     print("=" * 70 + "\n")
 
 
-def run_quiz():
+def run_headless_quiz():
     """
-    Executa o quiz completo.
-    Coleta feedback, gera perguntas com internet ON,
-    depois desabilita rede e executa o quiz.
+    Executa o quiz em modo CLI/headless (urwid).
+    Usado pelo comando `raff start --headless`.
     """
-    # FASE 1: Coleta feedback e gera perguntas (REDE ON)
-    print("\n" + "=" * 70)
-    print("FASE 1: Coleta de Feedback e Geração de Perguntas")
-    print("=" * 70)
-    
-    questions_text = get_questions()
-    
-    if not questions_text:
-        print("❌ Erro: Nenhuma pergunta disponível.")
-        return
-    
-    # Faz parse das perguntas
-    questions = parse_questions(questions_text)
-    
+    questions = get_questions()
+
     if not questions:
-        print("❌ Erro: Nenhuma pergunta válida encontrada.")
+        print("Nenhuma pergunta disponível para a sessão.")
         return
 
-    # FASE 2: Bloqueio de rede
-    print("\n" + "=" * 70)
-    print("FASE 2: Preparação da Sessão")
-    print("=" * 70)
-    
-    # Desabilita a rede antes de começar
     network_disabled = disable_network()
     if not network_disabled:
-        print("❌ Não foi possível desabilitar totalmente a rede.")
-        print("A sessão foi encerrada para evitar deixar o estado inconsistente.")
+        print("Aviso: Não foi possível desabilitar a rede. Sessão encerrada.")
         enable_network()
         return
-    
-    # Limpa o console
+
     clear_console()
-    
-    # FASE 3: Executa quiz (REDE OFF)
+
     try:
-        # Cria e executa a interface
+        from raff.gui.headless_ui import QuizUI
         ui = QuizUI(questions, on_complete=on_quiz_complete)
         ui.run()
     finally:
@@ -239,18 +188,24 @@ def run_quiz():
             enable_network()
 
 
+def run_gui_quiz():
+    """
+    Executa o quiz em modo GUI (PyQt6).
+    Usado pelo tray app e pelo comando `raff start` sem --headless.
+    """
+    questions = get_questions()
+    if not questions:
+        return None
+    disable_network()
+    return questions
+
+
 def main():
-    """
-    Função principal da aplicação.
-    Verifica se deve executar e roda o quiz.
-    """
-    # Verifica se deve executar
+    """Ponto de entrada para o modo headless (raff start --headless)."""
     if not should_run_quiz():
-        print("Quiz não está habilitado no momento.")
+        print("Quiz não habilitado para este momento.")
         return
-    
-    # Executa o quiz
-    run_quiz()
+    run_headless_quiz()
 
 
 if __name__ == "__main__":
