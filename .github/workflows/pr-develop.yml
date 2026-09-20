@@ -103,7 +103,7 @@ jobs:
       - name: Verificar PR existente
         id: checar_pr
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RAFF_PAT }}
         run: |
           numero=$(gh pr list \
             --base main \
@@ -124,7 +124,7 @@ jobs:
       - name: Abrir PR
         if: steps.checar_pr.outputs.numero == ''
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RAFF_PAT }}
         run: |
           gh pr create \
             --base main \
@@ -138,7 +138,7 @@ jobs:
       - name: Atualizar PR existente
         if: steps.checar_pr.outputs.numero != ''
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RAFF_PAT }}
         run: |
           gh pr edit "${{ steps.checar_pr.outputs.numero }}" \
             --title "$(cat /tmp/pr_titulo.txt)" \
