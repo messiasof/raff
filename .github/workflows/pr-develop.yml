@@ -1,0 +1,150 @@
+name: Abrir ou Atualizar PR da develop
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Fazer checkout do repositório
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # Lê o .raffver e monta o título + corpo do PR
+      # ---------------------------------------------------------------
+      - name: Ler .raffver e montar descrição do PR
+        id: raffver
+        shell: python
+        run: |
+          import os
+          import re
+
+          with open(".raffver", "r", encoding="utf-8") as f:
+              conteudo = f.read()
+
+          linhas = conteudo.splitlines()
+
+          campos = {}
+          indice_divisor = None
+          for i, linha in enumerate(linhas):
+              if "=" not in linha and re.search(r"-", linha):
+                  indice_divisor = i
+                  break
+              if "=" in linha:
+                  chave, _, valor = linha.partition("=")
+                  campos[chave.strip().upper()] = valor.strip()
+
+          # VERSION
+          versao_raw = re.sub(r"(?i)^v", "", campos.get("VERSION", "0").strip().strip('"\''))
+          versao = f"V{versao_raw}"
+
+          # NIGHTLY
+          nightly_raw = campos.get("NIGHTLY", "false").strip().lower().strip('"\'')
+          eh_nightly = nightly_raw in ("true", "1", "yes", "sim")
+
+          # TITLE
+          titulo_raw = campos.get("TITLE", "").strip().strip('"\'').strip()
+          titulo = f'"{titulo_raw}"' if titulo_raw else '""'
+
+          # Nome da release (igual ao release.yml)
+          if eh_nightly:
+              nome_release = f"[{versao} NIGHTLY] {titulo}"
+          else:
+              nome_release = f"[{versao}] {titulo}"
+
+          # Itens do log (abaixo do divisor)
+          itens = []
+          if indice_divisor is not None:
+              for linha in linhas[indice_divisor + 1:]:
+                  linha = linha.strip()
+                  if not linha:
+                      continue
+                  if linha.startswith("(write") or linha.startswith("(escreva"):
+                      continue
+                  linha = re.sub(r"^[-*]\s*", "", linha).strip()
+                  if linha:
+                      itens.append(f"* {linha}")
+
+          corpo = "\n".join(itens) if itens else "* Sem notas de versão ainda."
+
+          pr_titulo = nome_release
+
+          pr_corpo = f"""\
+          ## {nome_release}
+
+          ### O que muda nessa versão
+
+          {corpo}
+
+          ---
+          > Descrição gerada automaticamente a partir do `.raffver`. Edite o arquivo para atualizar.
+          """
+
+          # Dedenta (remove espaços à esquerda da heredoc)
+          import textwrap
+          pr_corpo = textwrap.dedent(pr_corpo)
+
+          delimitador = "RAFF_PR_BODY_EOF"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as saida:
+              saida.write(f"pr_titulo={pr_titulo}\n")
+              saida.write(f"pr_corpo<<{delimitador}\n")
+              saida.write(pr_corpo + "\n")
+              saida.write(f"{delimitador}\n")
+
+          print(f"Título do PR: {pr_titulo}")
+          print(f"Corpo:\n{pr_corpo}")
+
+      # ---------------------------------------------------------------
+      # Verifica se já existe um PR aberto de develop → main
+      # ---------------------------------------------------------------
+      - name: Verificar PR existente
+        id: checar_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          numero=$(gh pr list \
+            --base main \
+            --head develop \
+            --state open \
+            --json number \
+            --jq '.[0].number // ""')
+          echo "numero=$numero" >> "$GITHUB_OUTPUT"
+          if [ -n "$numero" ]; then
+            echo "PR existente: #$numero"
+          else
+            echo "Nenhum PR aberto encontrado."
+          fi
+
+      # ---------------------------------------------------------------
+      # Abre um novo PR (somente se não existir nenhum)
+      # ---------------------------------------------------------------
+      - name: Abrir PR
+        if: steps.checar_pr.outputs.numero == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head develop \
+            --title "${{ steps.raffver.outputs.pr_titulo }}" \
+            --body "${{ steps.raffver.outputs.pr_corpo }}"
+
+      # ---------------------------------------------------------------
+      # Atualiza o PR existente (título + corpo) a cada novo commit
+      # ---------------------------------------------------------------
+      - name: Atualizar PR existente
+        if: steps.checar_pr.outputs.numero != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit "${{ steps.checar_pr.outputs.numero }}" \
+            --title "${{ steps.raffver.outputs.pr_titulo }}" \
+            --body "${{ steps.raffver.outputs.pr_corpo }}"
