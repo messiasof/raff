@@ -37,13 +37,20 @@ def build_portable():
     nome = _nome_portavel()
     print(f"Construindo versão portátil do R.A.F.F como '{nome}'...")
 
+    assets_dir = BASE_DIR / "raff" / "gui" / "assets"
+    # Garante que a pasta de assets existe (pode estar vazia no CI)
+    assets_dir.mkdir(parents=True, exist_ok=True)
+
+    entrypoint = BASE_DIR / "raff" / "gui" / "tray.py"
+
     cmd = [
         "pyinstaller",
         f"--name={nome}",
         "--windowed",
         "--noconfirm",
-        "--add-data=raff/gui/assets;raff/gui/assets",
-        "raff/gui/tray.py",
+        # Caminhos absolutos evitam ambiguidade de cwd
+        f"--add-data={assets_dir}{os.pathsep}raff/gui/assets",
+        str(entrypoint),
     ]
 
     subprocess.run(cmd, cwd=BASE_DIR, check=True)

@@ -1,0 +1,196 @@
+name: Abrir ou Atualizar PR da develop
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Fazer checkout do repositório
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # Lê o .raffver e grava título + corpo em arquivos temporários
+      # (evita qualquer interpolação de aspas no shell)
+      # ---------------------------------------------------------------
+      - name: Ler .raffver e gravar arquivos de título e corpo
+        shell: python
+        run: |
+          import os
+          import re
+          import textwrap
+
+          with open(".raffver", "r", encoding="utf-8") as f:
+              conteudo = f.read()
+
+          linhas = conteudo.splitlines()
+
+          campos = {}
+          indice_divisor = None
+          for i, linha in enumerate(linhas):
+              if "=" not in linha and re.search(r"-", linha):
+                  indice_divisor = i
+                  break
+              if "=" in linha:
+                  chave, _, valor = linha.partition("=")
+                  campos[chave.strip().upper()] = valor.strip()
+
+          # VERSION
+          versao_raw = re.sub(r"(?i)^v", "", campos.get("VERSION", "0").strip().strip('"\''))
+          versao = f"V{versao_raw}"
+
+          # NIGHTLY
+          nightly_raw = campos.get("NIGHTLY", "false").strip().lower().strip('"\'')
+          eh_nightly = nightly_raw in ("true", "1", "yes", "sim")
+
+          # TITLE
+          titulo_raw = campos.get("TITLE", "").strip().strip('"\'').strip()
+          titulo = f'"{titulo_raw}"' if titulo_raw else '""'
+
+          # Nome formatado
+          if eh_nightly:
+              nome_release = f"[{versao} NIGHTLY] {titulo}"
+          else:
+              nome_release = f"[{versao}] {titulo}"
+
+          # Itens do log
+          itens = []
+          if indice_divisor is not None:
+              for linha in linhas[indice_divisor + 1:]:
+                  linha = linha.strip()
+                  if not linha:
+                      continue
+                  if linha.startswith("(write") or linha.startswith("(escreva"):
+                      continue
+                  linha = re.sub(r"^[-*]\s*", "", linha).strip()
+                  if linha:
+                      itens.append(f"* {linha}")
+
+          corpo_lista = "\n".join(itens) if itens else "* Sem notas de versão ainda."
+
+          pr_corpo = textwrap.dedent(f"""\
+          ## {nome_release}
+
+          ### O que muda nessa versão
+
+          {corpo_lista}
+
+          ---
+          > Descrição gerada automaticamente a partir do `.raffver`. Edite o arquivo para atualizar.
+          """)
+
+          # Grava em arquivos — sem passar nada pelo shell
+          with open("/tmp/pr_titulo.txt", "w", encoding="utf-8") as f:
+              f.write(nome_release)
+
+          with open("/tmp/pr_corpo.md", "w", encoding="utf-8") as f:
+              f.write(pr_corpo)
+
+          print(f"Título: {nome_release}")
+          print(f"Corpo:\n{pr_corpo}")
+
+      # ---------------------------------------------------------------
+      # Verifica se já existe um PR aberto de develop → main
+      # ---------------------------------------------------------------
+      - name: Verificar PR existente
+        id: checar_pr
+        env:
+          GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          numero=$(gh pr list \
+            --base main \
+            --head develop \
+            --state open \
+            --json number \
+            --jq '.[0].number // ""')
+          echo "numero=$numero" >> "$GITHUB_OUTPUT"
+          if [ -n "$numero" ]; then
+            echo "PR existente: #$numero"
+          else
+            echo "Nenhum PR aberto encontrado."
+          fi
+
+      # ---------------------------------------------------------------
+      # Abre um novo PR via API REST (sem GraphQL — evita restrições do gh CLI)
+      # ---------------------------------------------------------------
+      - name: Abrir PR
+        if: steps.checar_pr.outputs.numero == ''
+        env:
+          GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          TITULO=$(cat /tmp/pr_titulo.txt)
+          CORPO=$(cat /tmp/pr_corpo.md)
+          # Monta o payload JSON com Python para escapar corretamente
+          python3 -c "
+          import json, sys
+          payload = {
+            'title': open('/tmp/pr_titulo.txt').read().strip(),
+            'body':  open('/tmp/pr_corpo.md').read(),
+            'head':  'develop',
+            'base':  'main',
+          }
+          print(json.dumps(payload))
+          " > /tmp/pr_payload.json
+
+          curl -s -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/pulls" \
+            -d @/tmp/pr_payload.json | tee /tmp/pr_response.json
+
+          # Verifica se criou com sucesso
+          python3 -c "
+          import json, sys
+          r = json.load(open('/tmp/pr_response.json'))
+          if 'number' in r:
+              print(f'PR #{r[\"number\"]} criado: {r[\"html_url\"]}')
+          else:
+              print('Erro ao criar PR:', json.dumps(r, indent=2))
+              sys.exit(1)
+          "
+
+      # ---------------------------------------------------------------
+      # Atualiza o PR existente via API REST (título + corpo)
+      # ---------------------------------------------------------------
+      - name: Atualizar PR existente
+        if: steps.checar_pr.outputs.numero != ''
+        env:
+          GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMERO: ${{ steps.checar_pr.outputs.numero }}
+        run: |
+          python3 -c "
+          import json
+          payload = {
+            'title': open('/tmp/pr_titulo.txt').read().strip(),
+            'body':  open('/tmp/pr_corpo.md').read(),
+          }
+          print(json.dumps(payload))
+          " > /tmp/pr_update.json
+
+          curl -s -X PATCH \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/pulls/$PR_NUMERO" \
+            -d @/tmp/pr_update.json | tee /tmp/pr_update_response.json
+
+          python3 -c "
+          import json, sys
+          r = json.load(open('/tmp/pr_update_response.json'))
+          if 'number' in r:
+              print(f'PR #{r[\"number\"]} atualizado: {r[\"html_url\"]}')
+          else:
+              print('Erro ao atualizar PR:', json.dumps(r, indent=2))
+              sys.exit(1)
+          "
