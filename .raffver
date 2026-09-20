@@ -1,6 +1,6 @@
 VERSION=2
 NIGHTLY=true
-TITLE=
+TITLE="Coração de estudante"
 --------------------------------------
 Refatoração completa para v2: nova estrutura de pacotes raff/ no lugar de src/
 Adicionado system tray permanente com PyQt6 substituindo o Task Scheduler do Windows
