@@ -9,8 +9,9 @@ jobs:
   pr:
     runs-on: ubuntu-latest
 
-    env:
-      GH_TOKEN: ${{ secrets.RAFF_PAT }}
+    permissions:
+      pull-requests: write
+      contents: read
 
     steps:
       - name: Fazer checkout do repositório
@@ -101,6 +102,8 @@ jobs:
       # ---------------------------------------------------------------
       - name: Verificar PR existente
         id: checar_pr
+        env:
+          GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
         run: |
           numero=$(gh pr list \
             --base main \
@@ -116,23 +119,78 @@ jobs:
           fi
 
       # ---------------------------------------------------------------
-      # Abre um novo PR (somente se não existir nenhum)
+      # Abre um novo PR via API REST (sem GraphQL — evita restrições do gh CLI)
       # ---------------------------------------------------------------
       - name: Abrir PR
         if: steps.checar_pr.outputs.numero == ''
+        env:
+          GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
-          gh pr create \
-            --base main \
-            --head develop \
-            --title "$(cat /tmp/pr_titulo.txt)" \
-            --body-file /tmp/pr_corpo.md
+          TITULO=$(cat /tmp/pr_titulo.txt)
+          CORPO=$(cat /tmp/pr_corpo.md)
+          # Monta o payload JSON com Python para escapar corretamente
+          python3 -c "
+          import json, sys
+          payload = {
+            'title': open('/tmp/pr_titulo.txt').read().strip(),
+            'body':  open('/tmp/pr_corpo.md').read(),
+            'head':  'develop',
+            'base':  'main',
+          }
+          print(json.dumps(payload))
+          " > /tmp/pr_payload.json
+
+          curl -s -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/pulls" \
+            -d @/tmp/pr_payload.json | tee /tmp/pr_response.json
+
+          # Verifica se criou com sucesso
+          python3 -c "
+          import json, sys
+          r = json.load(open('/tmp/pr_response.json'))
+          if 'number' in r:
+              print(f'PR #{r[\"number\"]} criado: {r[\"html_url\"]}')
+          else:
+              print('Erro ao criar PR:', json.dumps(r, indent=2))
+              sys.exit(1)
+          "
 
       # ---------------------------------------------------------------
-      # Atualiza o PR existente (título + corpo) a cada novo commit
+      # Atualiza o PR existente via API REST (título + corpo)
       # ---------------------------------------------------------------
       - name: Atualizar PR existente
         if: steps.checar_pr.outputs.numero != ''
+        env:
+          GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMERO: ${{ steps.checar_pr.outputs.numero }}
         run: |
-          gh pr edit "${{ steps.checar_pr.outputs.numero }}" \
-            --title "$(cat /tmp/pr_titulo.txt)" \
-            --body-file /tmp/pr_corpo.md
+          python3 -c "
+          import json
+          payload = {
+            'title': open('/tmp/pr_titulo.txt').read().strip(),
+            'body':  open('/tmp/pr_corpo.md').read(),
+          }
+          print(json.dumps(payload))
+          " > /tmp/pr_update.json
+
+          curl -s -X PATCH \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/pulls/$PR_NUMERO" \
+            -d @/tmp/pr_update.json | tee /tmp/pr_update_response.json
+
+          python3 -c "
+          import json, sys
+          r = json.load(open('/tmp/pr_update_response.json'))
+          if 'number' in r:
+              print(f'PR #{r[\"number\"]} atualizado: {r[\"html_url\"]}')
+          else:
+              print('Erro ao atualizar PR:', json.dumps(r, indent=2))
+              sys.exit(1)
+          "
