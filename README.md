@@ -1,5 +1,5 @@
 # 🧠 R.A.F.F
-*Rotina de Aprendizado e Foco Familiar.*
+*Que significa: Rotina de Aprendizado Focada e Flexível.*
 
 Uma ferramenta simples, pensada e feita com carinho para ajudar meu irmão Rafael e outras pessoas neurodivergentes a transformar a saída para a internet em uma recompensa por aprendizado. O objetivo não é "controlar" ninguém, e sim oferecer um fluxo de estudos previsível, supervisionado e configurável, respeitando o ambiente favorito do aluno: o computador.
 
