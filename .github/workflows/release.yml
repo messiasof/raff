@@ -1,0 +1,219 @@
+name: Gerar Build e Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  release:
+    # Só executa se o PR foi de fato mergeado (não apenas fechado)
+    if: github.event.pull_request.merged == true
+    runs-on: windows-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Fazer checkout do repositório
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # Leitura e parse do .raffver
+      # ---------------------------------------------------------------
+      - name: Ler e interpretar o arquivo .raffver
+        id: raffver
+        shell: python
+        run: |
+          import os
+          import re
+
+          with open(".raffver", "r", encoding="utf-8") as f:
+              conteudo = f.read()
+
+          linhas = conteudo.splitlines()
+
+          # Extrai campos do cabeçalho (antes da linha divisória)
+          campos = {}
+          indice_divisor = None
+          for i, linha in enumerate(linhas):
+              # Linha divisória: qualquer linha que contenha ao menos um hífen
+              # e não tenha conteúdo útil de chave=valor
+              if re.match(r"^\s*-+\s*$", linha) or (re.search(r"-", linha) and "=" not in linha):
+                  indice_divisor = i
+                  break
+              if "=" in linha:
+                  chave, _, valor = linha.partition("=")
+                  campos[chave.strip().upper()] = valor.strip()
+
+          # --- VERSION ---
+          versao_raw = campos.get("VERSION", "").strip().strip('"').strip("'")
+          # Aceita "V2", "v2", "2"
+          versao_raw = re.sub(r"(?i)^v", "", versao_raw)
+          versao = f"V{versao_raw}" if versao_raw else "V0"
+
+          # --- NIGHTLY ---
+          nightly_raw = campos.get("NIGHTLY", "false").strip().lower().strip('"').strip("'")
+          eh_nightly = nightly_raw in ("true", "1", "yes", "sim")
+
+          # --- TITLE ---
+          titulo_raw = campos.get("TITLE", "").strip().strip('"').strip("'").strip()
+          if titulo_raw:
+              titulo = f'"{titulo_raw}"'
+          else:
+              titulo = '""'
+
+          # --- Nome da release ---
+          if eh_nightly:
+              nome_release = f"[{versao} NIGHTLY] {titulo}"
+          else:
+              nome_release = f"[{versao}] {titulo}"
+
+          # --- Tag da release ---
+          import datetime
+          stamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+          tag = f"{versao.lower()}-{'nightly-' if eh_nightly else ''}{stamp}"
+
+          # --- Corpo da release (linhas abaixo do divisor) ---
+          itens = []
+          if indice_divisor is not None:
+              for linha in linhas[indice_divisor + 1:]:
+                  linha = linha.strip()
+                  if not linha:
+                      continue
+                  # Ignora a instrução placeholder original
+                  if linha.startswith("(write") or linha.startswith("(escreva"):
+                      continue
+                  # Normaliza: remove prefixo "- " ou "* " ou espaço
+                  linha = re.sub(r"^[-*]\s*", "", linha).strip()
+                  if linha:
+                      itens.append(f"* {linha}")
+
+          corpo = "\n".join(itens) if itens else "* Sem notas de versão informadas."
+
+          # Nome dos artefatos (usado pelos scripts de build)
+          nome_instalador = f"RAFF_{versao}-Instalador"
+          nome_portavel   = f"RAFF_{versao}-Portatil"
+
+          # Exporta para o ambiente do workflow
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as saida:
+              saida.write(f"versao={versao}\n")
+              saida.write(f"eh_nightly={str(eh_nightly).lower()}\n")
+              saida.write(f"nome_release={nome_release}\n")
+              saida.write(f"tag={tag}\n")
+              saida.write(f"nome_instalador={nome_instalador}\n")
+              saida.write(f"nome_portavel={nome_portavel}\n")
+
+          # Corpo pode ter múltiplas linhas — usa o delimitador especial do GitHub
+          delimitador = "RAFF_RELEASE_BODY_EOF"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as saida:
+              saida.write(f"corpo_release<<{delimitador}\n")
+              saida.write(corpo + "\n")
+              saida.write(f"{delimitador}\n")
+
+          print(f"Release: {nome_release}")
+          print(f"Tag:     {tag}")
+          print(f"Corpo:\n{corpo}")
+
+      # ---------------------------------------------------------------
+      # Configurar Python
+      # ---------------------------------------------------------------
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller cx_Freeze
+
+      # ---------------------------------------------------------------
+      # Build da versão portátil
+      # ---------------------------------------------------------------
+      - name: Gerar versão portátil (PyInstaller)
+        env:
+          RAFF_NOME_PORTAVEL: ${{ steps.raffver.outputs.nome_portavel }}
+        run: |
+          python installer/build_portable.py
+
+      # ---------------------------------------------------------------
+      # Build do instalador MSI
+      # ---------------------------------------------------------------
+      - name: Gerar instalador MSI (cx_Freeze)
+        env:
+          RAFF_NOME_INSTALADOR: ${{ steps.raffver.outputs.nome_instalador }}
+        run: |
+          cd installer
+          python build_msi.py bdist_msi
+
+      # ---------------------------------------------------------------
+      # Localiza os artefatos gerados
+      # ---------------------------------------------------------------
+      - name: Localizar artefatos gerados
+        id: artefatos
+        shell: python
+        run: |
+          import os
+          import glob
+
+          nome_instalador = os.environ.get("RAFF_NOME_INSTALADOR", "RAFF_V2-Instalador")
+          nome_portavel   = os.environ.get("RAFF_NOME_PORTAVEL",   "RAFF_V2-Portatil")
+
+          # Portátil: PyInstaller gera uma pasta — compactamos em .zip
+          import shutil
+          from pathlib import Path
+
+          pasta_portavel = Path("dist") / nome_portavel
+          if pasta_portavel.exists():
+              zip_portavel = shutil.make_archive(str(pasta_portavel), "zip", str(pasta_portavel))
+          else:
+              # Tenta pasta com nome padrão gerado pelo build
+              candidatos = list(Path("dist").glob("RAFF*Portavel*")) + list(Path("dist").glob("RAFF*Portatil*"))
+              if candidatos:
+                  zip_portavel = shutil.make_archive(str(Path("dist") / nome_portavel), "zip", str(candidatos[0]))
+              else:
+                  zip_portavel = ""
+
+          # MSI: cx_Freeze gera na pasta dist/
+          candidatos_msi = (
+              list(Path("installer/dist").glob("*.msi")) +
+              list(Path("dist").glob("*.msi"))
+          )
+          caminho_msi = str(candidatos_msi[0]) if candidatos_msi else ""
+
+          # Renomeia o MSI para o nome correto
+          if caminho_msi:
+              destino_msi = str(Path(caminho_msi).parent / f"{nome_instalador}.msi")
+              if caminho_msi != destino_msi:
+                  os.rename(caminho_msi, destino_msi)
+              caminho_msi = destino_msi
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as saida:
+              saida.write(f"caminho_zip={zip_portavel}\n")
+              saida.write(f"caminho_msi={caminho_msi}\n")
+
+          print(f"Portátil ZIP: {zip_portavel}")
+          print(f"Instalador MSI: {caminho_msi}")
+        env:
+          RAFF_NOME_INSTALADOR: ${{ steps.raffver.outputs.nome_instalador }}
+          RAFF_NOME_PORTAVEL: ${{ steps.raffver.outputs.nome_portavel }}
+
+      # ---------------------------------------------------------------
+      # Criar a release no GitHub
+      # ---------------------------------------------------------------
+      - name: Criar release no GitHub
+        id: criar_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.raffver.outputs.tag }}
+          name: ${{ steps.raffver.outputs.nome_release }}
+          body: ${{ steps.raffver.outputs.corpo_release }}
+          draft: false
+          prerelease: ${{ steps.raffver.outputs.eh_nightly }}
+          files: |
+            ${{ steps.artefatos.outputs.caminho_msi }}
+            ${{ steps.artefatos.outputs.caminho_zip }}
+

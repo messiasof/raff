@@ -1,0 +1,28 @@
+VERSION=2
+NIGHTLY=true
+TITLE="Coração de estudante"
+--------------------------------------
+Refatoração completa para v2: nova estrutura de pacotes raff/ no lugar de src/
+Adicionado system tray permanente com PyQt6 substituindo o Task Scheduler do Windows
+Implementado agendador interno com suporte a múltiplos horários configuráveis
+Adicionado módulo de segurança com senha do responsável usando bcrypt + Fernet
+Configurações críticas criptografadas em repouso — sem mecanismo de recuperação por design
+Banco local de questões substituindo a dependência do Pastebin
+Questões do banco local gerenciadas exclusivamente via GUI com senha do responsável
+Fallback de questões em três camadas: banco local, cache da sessão anterior, banco de emergência
+Fallback inteligente da API Gemini: sem crédito não trava o PC nem bloqueia a rede
+Janela de quiz em PyQt6 com progresso, feedback visual e som de vitória personalizável
+Janela de configurações com abas para estudante e responsável, protegida por senha
+Estudante pode personalizar som de vitória e tema sem precisar de senha
+Editor de questões integrado à janela de configurações
+Diálogo de autenticação reutilizável em toda a aplicação
+Toast notifications nativas do Windows substituindo o MessageBox bloqueante
+Aviso prévio configurável em minutos antes da sessão
+API REST local com FastAPI autenticada pela senha do responsável
+API exposta em localhost por padrão — exposição na LAN é opt-in
+CLI refatorada com comandos: start, start --headless, gui, warn, api, config, healthcheck
+Modo headless preservado com flag --headless para retrocompatibilidade
+Scripts de build MSI e portátil lendo nome do artefato do .raffver automaticamente
+Documentação completa em ptbr em docs/ com sete arquivos
+docs/stubs.md documenta funcionalidades legadas: Pastebin, headless, .env
+README unificado com o texto original do autor preservando a história do projeto
