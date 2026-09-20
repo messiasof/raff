@@ -13,6 +13,10 @@ jobs:
       contents: write
       pull-requests: write
 
+    env:
+      # Usa o PAT se disponível, senão cai no GITHUB_TOKEN padrão
+      GH_TOKEN: ${{ secrets.RAFF_PAT || secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Fazer checkout do repositório
         uses: actions/checkout@v4
@@ -102,8 +106,6 @@ jobs:
       # ---------------------------------------------------------------
       - name: Verificar PR existente
         id: checar_pr
-        env:
-          GH_TOKEN: ${{ secrets.RAFF_PAT }}
         run: |
           numero=$(gh pr list \
             --base main \
@@ -123,8 +125,6 @@ jobs:
       # ---------------------------------------------------------------
       - name: Abrir PR
         if: steps.checar_pr.outputs.numero == ''
-        env:
-          GH_TOKEN: ${{ secrets.RAFF_PAT }}
         run: |
           gh pr create \
             --base main \
@@ -137,8 +137,6 @@ jobs:
       # ---------------------------------------------------------------
       - name: Atualizar PR existente
         if: steps.checar_pr.outputs.numero != ''
-        env:
-          GH_TOKEN: ${{ secrets.RAFF_PAT }}
         run: |
           gh pr edit "${{ steps.checar_pr.outputs.numero }}" \
             --title "$(cat /tmp/pr_titulo.txt)" \
