@@ -35,7 +35,22 @@ def _nome_instalador() -> str:
 
 
 _nome = _nome_instalador()
-_versao_num = re.sub(r"(?i)^v", "", _ler_versao()) or "0"
+_versao_raw = re.sub(r"(?i)^v", "", _ler_versao()) or "0"
+
+# Converte versões com sufixo de letra (ex: "2b", "3a") para PEP 440 válido.
+# "2b" → version="2.0.0b0"  (usado no setup())
+# "2b" → _versao_num="2"    (usado no nome do artefato, que já vem do .raffver)
+_letter_match = re.match(r"^(\d+)([a-z]+)(\d*)$", _versao_raw, re.IGNORECASE)
+if _letter_match:
+    _versao_num = _letter_match.group(1)          # parte numérica pura  → "2"
+    _versao_pep440 = (
+        f"{_letter_match.group(1)}.0.0"
+        f"{_letter_match.group(2).lower()}"
+        f"{_letter_match.group(3) or '0'}"        # "2b" → "2.0.0b0"
+    )
+else:
+    _versao_num = _versao_raw
+    _versao_pep440 = f"{_versao_raw}.0.0"
 
 build_exe_options = {
     "packages": [
@@ -72,7 +87,7 @@ executables = [
 
 setup(
     name=_nome,
-    version=f"{_versao_num}.0.0",
+    version=_versao_pep440,
     description="Rotina de Aprendizado Focada e Flexível",
     author="Emanuel Messias",
     author_email="contato@messias.me",
