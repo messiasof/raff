@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QApplication, QSystemTrayIcon, QMenu, QMessageBox
 )
 from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, QThread, pyqtSignal
 
 from raff.core.config import SCHEDULED_TIMES, START_WARNING_MINUTES, ASSETS_DIR
 from raff.core.scheduler import get_scheduler
@@ -25,6 +25,23 @@ from raff.gui.admin_dialog import prompt_admin_password
 
 RUN_REG_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 APP_NAME = "RAFF_AutismHelper"
+
+
+class QuizWorker(QThread):
+    """
+    Worker thread que executa disable_network + generate_questions fora da
+    thread principal do Qt, evitando que a UI trave durante operações lentas.
+    Emite 'ready' com a lista de questões quando termina.
+    """
+    ready = pyqtSignal(list)
+
+    def run(self):
+        disable_network()
+        try:
+            questions = generate_questions()
+        except Exception:
+            questions = get_fallback_questions()
+        self.ready.emit(questions)
 
 
 def set_autostart(enable: bool, executable_path: str = None) -> bool:
@@ -115,13 +132,14 @@ class RaffTrayApp:
         show_warning(minutes_remaining=remaining_minutes)
 
     def trigger_quiz(self):
-        """Inicia a sessão de quiz bloqueando a rede temporariamente."""
-        disable_network()
-        try:
-            questions = generate_questions()
-        except Exception:
-            questions = get_fallback_questions()
+        """Dispara o worker em background; a UI continua responsiva durante o carregamento."""
+        # Guarda referência para o worker não ser coletado pelo GC antes de terminar
+        self._quiz_worker = QuizWorker()
+        self._quiz_worker.ready.connect(self._launch_quiz)
+        self._quiz_worker.start()
 
+    def _launch_quiz(self, questions: list):
+        """Chamado pela thread principal quando o worker termina — sempre seguro para UI."""
         self.quiz_window = QuizWindow(questions)
         self.quiz_window.show()
 
