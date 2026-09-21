@@ -10,12 +10,13 @@ from PyQt6.QtWidgets import (
     QCheckBox, QMessageBox, QFileDialog, QGroupBox, QSpinBox
 )
 from PyQt6.QtCore import Qt, QTime
+from PyQt6.QtGui import QIcon, QPalette, QPixmap
 
 from raff.core.config import (
     STUDENT_NAME, TEACHER_NAME, GEMINI_API_KEY,
     START_WARNING_ENABLED, START_WARNING_MINUTES,
     COMPLETE_SOUND_PATH, NETWORK_DEVICE_1, NETWORK_DEVICE_2,
-    API_PORT, SCHEDULED_TIMES
+    API_PORT, SCHEDULED_TIMES, ASSETS_DIR
 )
 from raff.core.storage import (
     load_settings, save_settings, get_feedbacks, get_stats
@@ -33,15 +34,57 @@ class MainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("R.A.F.F — Configurações e Acompanhamento")
+        self.setWindowTitle("R.A.F.F — Rotina de Aprendizado Focada e Flexível")
         self.setMinimumSize(780, 560)
         self.setStyleSheet(THEME_STYLESHEET)
+
+        # Ícone da janela
+        ico = ASSETS_DIR / "RAFF_Icon.ico"
+        if ico.exists():
+            self.setWindowIcon(QIcon(str(ico)))
 
         self.admin_authenticated = False
         self._init_ui()
 
+    def _is_dark_mode(self) -> bool:
+        """Retorna True se o sistema estiver usando tema escuro."""
+        palette = self.palette()
+        bg = palette.color(QPalette.ColorRole.Window)
+        # Considera escuro quando a luminosidade do fundo for menor que 128
+        return bg.lightness() < 128
+
+    def _get_logo_pixmap(self) -> QPixmap:
+        """Retorna o logo adequado ao tema atual (claro ou escuro)."""
+        if self._is_dark_mode():
+            path = ASSETS_DIR / "dark" / "RAFF-LogoDarkMode.png"
+        else:
+            path = ASSETS_DIR / "light" / "RAFF-LogoLightMode.png"
+        if path.exists():
+            return QPixmap(str(path))
+        return QPixmap()
+
     def _init_ui(self):
-        self.tabs = QTabWidget(self)
+        # Contentor raiz: logo + abas
+        root = QWidget()
+        root_layout = QVBoxLayout(root)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+
+        # --- Logo adaptativo ao tema ---
+        logo_pix = self._get_logo_pixmap()
+        if not logo_pix.isNull():
+            self.logo_lbl = QLabel()
+            self.logo_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.logo_lbl.setPixmap(
+                logo_pix.scaledToHeight(72, Qt.TransformationMode.SmoothTransformation)
+            )
+            self.logo_lbl.setContentsMargins(0, 14, 0, 10)
+            root_layout.addWidget(self.logo_lbl)
+        else:
+            self.logo_lbl = None
+
+        # --- Abas ---
+        self.tabs = QTabWidget()
         self.tabs.currentChanged.connect(self._on_tab_changed)
 
         # 1. Aba Estudante (Livre)
@@ -60,7 +103,8 @@ class MainWindow(QMainWindow):
         self.stats_tab = self._create_stats_tab()
         self.tabs.addTab(self.stats_tab, "Estatísticas e Progresso")
 
-        self.setCentralWidget(self.tabs)
+        root_layout.addWidget(self.tabs)
+        self.setCentralWidget(root)
 
     def _on_tab_changed(self, index: int):
         # Abas 1 (Responsável) e 2 (Questões) requerem senha

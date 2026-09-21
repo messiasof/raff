@@ -1,6 +1,6 @@
 # Guia de Instalação — R.A.F.F
 
-O **R.A.F.F** (Rotina de Aprendizado e Foco Familiar) pode ser instalado de diferentes formas no Windows 10 e 11.
+O **R.A.F.F** (Rotina de Aprendizado Focada e Flexível) pode ser instalado de diferentes formas no Windows 10 e 11.
 
 ---
 

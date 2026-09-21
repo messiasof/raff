@@ -29,7 +29,9 @@ def show_toast(
 
     try:
         from win11toast import toast
-        icon_path = ASSETS_DIR / "icon.png"
+        icon_path = ASSETS_DIR / "RAFF_Icon.ico"
+        if not icon_path.exists():
+            icon_path = ASSETS_DIR / "icon.png"
         icon = str(icon_path) if icon_path.exists() else None
         
         toast(

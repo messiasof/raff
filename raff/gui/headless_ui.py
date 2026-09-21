@@ -66,7 +66,7 @@ class QuizUI:
     def _build_layout(self):
         header = urwid.Pile([
             urwid.Text(("title", "R.A.F.F"), align="center"),
-            urwid.Text(("subtitle", "Rotina de Aprendizado e Foco Familiar"), align="center"),
+            urwid.Text(("subtitle", "Rotina de Aprendizado Focada e Flexível"), align="center"),
             urwid.Divider("-"),
         ])
 

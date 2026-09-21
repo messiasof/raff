@@ -4,17 +4,32 @@ Centraliza todas as variáveis de ambiente e preferências do sistema.
 """
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente do .env se existir
+# Carrega variáveis de ambiente do .env se existir (opcional — todos os valores têm padrão)
 load_dotenv()
 
 # Diretórios
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = BASE_DIR / "data"
+# Quando empacotado pelo PyInstaller/cx_Freeze, __file__ não aponta para a raiz do projeto.
+# Usamos o diretório do executável para dados mutáveis e sys._MEIPASS para assets somente-leitura.
+_frozen = getattr(sys, "frozen", False)
+
+if _frozen:
+    # Executável empacotado: dados ficam ao lado do .exe (gravável pelo usuário)
+    _exe_dir = Path(sys.executable).resolve().parent
+    DATA_DIR = _exe_dir / "data"
+    # Assets foram copiados pelo empacotador para dentro do bundle
+    _bundle_dir = Path(getattr(sys, "_MEIPASS", _exe_dir))
+    ASSETS_DIR = _bundle_dir / "raff" / "gui" / "assets"
+else:
+    # Desenvolvimento: caminhos relativos à raiz do repositório
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent
+    DATA_DIR = BASE_DIR / "data"
+    ASSETS_DIR = BASE_DIR / "raff" / "gui" / "assets"
+
 DATA_DIR.mkdir(parents=True, exist_ok=True)
-ASSETS_DIR = BASE_DIR / "raff" / "gui" / "assets"
 
 # Configurações do Aluno e Responsável
 STUDENT_NAME = os.getenv("STUDENT_NAME", "Estudante")
@@ -45,7 +60,7 @@ SCHEDULED_TIMES = [
 # Avisos (Toast Notifications)
 START_WARNING_ENABLED = os.getenv("START_WARNING_ENABLED", "True").lower() in ("true", "1", "yes")
 START_WARNING_MINUTES = int(os.getenv("START_WARNING_MINUTES", "5"))
-START_WARNING_TITLE = os.getenv("START_WARNING_TITLE", "R.A.F.F — Aviso de Foco")
+START_WARNING_TITLE = os.getenv("START_WARNING_TITLE", "R.A.F.F")
 START_WARNING_SOUND = os.getenv("START_WARNING_SOUND", "True").lower() in ("true", "1", "yes")
 
 # Som de Conclusão

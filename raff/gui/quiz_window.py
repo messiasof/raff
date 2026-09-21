@@ -12,9 +12,9 @@ from PyQt6.QtWidgets import (
     QProgressBar, QMessageBox, QFrame
 )
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 
-from raff.core.config import COMPLETE_SOUND_PATH, STUDENT_NAME
+from raff.core.config import COMPLETE_SOUND_PATH, STUDENT_NAME, ASSETS_DIR
 from raff.core.storage import record_quiz_result
 from raff.core.network import enable_network
 from raff.gui.styles import THEME_STYLESHEET
@@ -44,7 +44,11 @@ class QuizWindow(QWidget):
         self.setWindowTitle(f"R.A.F.F — Sessão de Aprendizado de {STUDENT_NAME}")
         self.setMinimumSize(700, 520)
         self.setStyleSheet(THEME_STYLESHEET)
-        
+
+        ico = ASSETS_DIR / "RAFF_Icon.ico"
+        if ico.exists():
+            self.setWindowIcon(QIcon(str(ico)))
+
         # Bloqueia botão de fechar durante o quiz
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.WindowTitleHint)
 
