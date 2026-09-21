@@ -4,10 +4,14 @@ Controla habilitação/desabilitação de adaptadores de rede
 """
 
 import subprocess
+import sys
 from typing import List
 
 from raff.core.config import NETWORK_DEVICE_1, NETWORK_DEVICE_2
 from raff.core.storage import save_network_state
+
+# No Windows, evita que subprocessos abram janela de console visível ao usuário.
+_CREATION_FLAGS = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
 
 def _run_command(command: List[str]) -> bool:
@@ -17,6 +21,7 @@ def _run_command(command: List[str]) -> bool:
             capture_output=True,
             text=True,
             check=False,
+            creationflags=_CREATION_FLAGS,
         )
         return completed.returncode == 0
     except (OSError, ValueError):
