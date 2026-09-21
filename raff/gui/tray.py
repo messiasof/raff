@@ -10,12 +10,13 @@ from PyQt6.QtWidgets import (
     QApplication, QSystemTrayIcon, QMenu, QMessageBox
 )
 from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 
 from raff.core.config import SCHEDULED_TIMES, START_WARNING_MINUTES, ASSETS_DIR
 from raff.core.scheduler import get_scheduler
 from raff.core.network import enable_network, disable_network
-from raff.core.ai_engine import run_ai_feedback_flow, get_fallback_questions
+from raff.core.ai_engine import generate_questions, get_fallback_questions
+from raff.core.security import is_admin_password_set
 from raff.warn import show_warning
 from raff.gui.main_window import MainWindow
 from raff.gui.quiz_window import QuizWindow
@@ -50,16 +51,30 @@ class RaffTrayApp:
         self.app = app
         self.main_window = None
         self.quiz_window = None
-        
-        icon_path = ASSETS_DIR / "icon.png"
+
+        icon_path = ASSETS_DIR / "RAFF_Icon.ico"
+        if not icon_path.exists():
+            icon_path = ASSETS_DIR / "icon.png"
         self.icon = QIcon(str(icon_path)) if icon_path.exists() else app.style().standardIcon(app.style().StandardPixmap.SP_ComputerIcon)
 
         self.tray_icon = QSystemTrayIcon(self.icon, self.app)
-        self.tray_icon.setToolTip("R.A.F.F — Rotina de Aprendizado e Foco Familiar")
+        self.tray_icon.setToolTip("R.A.F.F — Rotina de Aprendizado Focada e Flexível")
 
         self._create_menu()
         self._setup_scheduler()
+
+        # Clique simples (esquerdo) abre as configurações
+        self.tray_icon.activated.connect(self._on_tray_activated)
+
         self.tray_icon.show()
+
+        # Na primeira execução (sem senha configurada), abre as configurações automaticamente
+        if not is_admin_password_set():
+            QTimer.singleShot(500, self.open_settings)
+
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+            self.open_settings()
 
     def _create_menu(self):
         menu = QMenu()
@@ -103,7 +118,7 @@ class RaffTrayApp:
         """Inicia a sessão de quiz bloqueando a rede temporariamente."""
         disable_network()
         try:
-            questions = run_ai_feedback_flow()
+            questions = generate_questions()
         except Exception:
             questions = get_fallback_questions()
 
@@ -115,13 +130,14 @@ class RaffTrayApp:
             self.main_window = MainWindow()
         self.main_window.show()
         self.main_window.activateWindow()
+        self.main_window.raise_()
 
     def show_about(self):
         QMessageBox.information(
             None,
             "Sobre o R.A.F.F",
             "<h3>R.A.F.F v2.0</h3>"
-            "<p><b>Rotina de Aprendizado e Foco Familiar</b></p>"
+            "<p><b>Rotina de Aprendizado Focada e Flexível</b></p>"
             "<p>Aplicação nativa para apoio cognitivo, rotina de estudos estruturada e acessibilidade.</p>"
             "<p>Desenvolvido com carinho e foco pedagógico.</p>"
         )

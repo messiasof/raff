@@ -1,7 +1,10 @@
-VERSION=2
+VERSION=2b
 NIGHTLY=true
-TITLE="Coração de estudante"
+TITLE="Xangai"
 --------------------------------------
+Logotipo do RAFF criado inspirado no meu irmão Rafael Reis e seu lindo cabelão
+Correções de inicialização no Windows
+Nome da versão inspirada na música do Gapes
 Refatoração completa para v2: nova estrutura de pacotes raff/ no lugar de src/
 Adicionado system tray permanente com PyQt6 substituindo o Task Scheduler do Windows
 Implementado agendador interno com suporte a múltiplos horários configuráveis

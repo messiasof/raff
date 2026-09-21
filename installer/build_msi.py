@@ -52,16 +52,19 @@ build_exe_options = {
 bdist_msi_options = {
     "add_to_path": True,
     "initial_target_dir": r"[ProgramFilesFolder]\RAFF",
-    "install_icon": str(BASE_DIR / "raff" / "gui" / "assets" / "icon.ico")
-    if (BASE_DIR / "raff" / "gui" / "assets" / "icon.ico").exists()
+    "install_icon": str(BASE_DIR / "raff" / "gui" / "assets" / "RAFF_Icon.ico")
+    if (BASE_DIR / "raff" / "gui" / "assets" / "RAFF_Icon.ico").exists()
     else None,
 }
+
+_ico = BASE_DIR / "raff" / "gui" / "assets" / "RAFF_Icon.ico"
 
 executables = [
     Executable(
         script=str(BASE_DIR / "raff" / "gui" / "tray.py"),
         base="Win32GUI" if sys.platform == "win32" else None,
         target_name="raff.exe",
+        icon=str(_ico) if _ico.exists() else None,
         shortcut_name="R.A.F.F",
         shortcut_dir="DesktopFolder",
     )
@@ -70,7 +73,10 @@ executables = [
 setup(
     name=_nome,
     version=f"{_versao_num}.0.0",
-    description="Rotina de Aprendizado e Foco Familiar",
+    description="Rotina de Aprendizado Focada e Flexível",
+    author="Emanuel Messias",
+    author_email="contato@messias.me",
+    url="https://messias.me",
     options={
         "build_exe": build_exe_options,
         "bdist_msi": bdist_msi_options,

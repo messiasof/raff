@@ -42,6 +42,7 @@ def build_portable():
     assets_dir.mkdir(parents=True, exist_ok=True)
 
     entrypoint = BASE_DIR / "raff" / "gui" / "tray.py"
+    ico = BASE_DIR / "raff" / "gui" / "assets" / "RAFF_Icon.ico"
 
     cmd = [
         "pyinstaller",
@@ -50,8 +51,10 @@ def build_portable():
         "--noconfirm",
         # Caminhos absolutos evitam ambiguidade de cwd
         f"--add-data={assets_dir}{os.pathsep}raff/gui/assets",
-        str(entrypoint),
     ]
+    if ico.exists():
+        cmd += [f"--icon={ico}"]
+    cmd.append(str(entrypoint))
 
     subprocess.run(cmd, cwd=BASE_DIR, check=True)
 

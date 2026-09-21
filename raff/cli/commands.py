@@ -63,7 +63,7 @@ def cmd_healthcheck(args):
 def mainCLI():
     parser = argparse.ArgumentParser(
         prog="raff",
-        description="R.A.F.F — Rotina de Aprendizado e Foco Familiar",
+        description="R.A.F.F — Rotina de Aprendizado Focada e Flexível",
     )
     parser.add_argument(
         "--version", action="version", version="R.A.F.F v2.0.0"
@@ -72,7 +72,7 @@ def mainCLI():
     subparsers = parser.add_subparsers(dest="comando", help="Comandos disponíveis")
 
     # raff start [--headless]
-    p_start = subparsers.add_parser("start", help="Inicia o R.A.F.F (GUI por padrão)")
+    p_start = subparsers.add_parser("start", help="Inicia o R.A.F.F — GUI por padrão")
     p_start.add_argument(
         "--headless",
         action="store_true",

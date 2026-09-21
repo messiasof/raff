@@ -10,6 +10,10 @@ with open("requirements.txt") as f:
 setup(
     name="raff",
     version="2.0.0",
+    description="Rotina de Aprendizado Focada e Flexível",
+    author="Emanuel Messias",
+    author_email="contato@messias.me",
+    url="https://messias.me",
     packages=find_packages(where="."),
     package_dir={"": "."},
     entry_points={

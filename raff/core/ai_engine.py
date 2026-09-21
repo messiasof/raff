@@ -33,7 +33,7 @@ def get_current_subject() -> str:
 
 
 def collect_feedback() -> str:
-    """Coleta o feedback do responsável via terminal ou interface."""
+    """Coleta o feedback do responsável via terminal (usado apenas no modo --headless)."""
     materia = get_current_subject()
     print("\n" + "=" * 50)
     print(f"Área do Responsável - Feedback Pedagógico ({materia})")
@@ -42,7 +42,11 @@ def collect_feedback() -> str:
     print("Isso ajudará a IA a personalizar as próximas perguntas.")
     print("Deixe em branco para pular.\n")
 
-    feedback = input("Feedback: ").strip()
+    try:
+        feedback = input("Feedback: ").strip()
+    except (EOFError, OSError):
+        # Sem terminal disponível (modo GUI / empacotado sem console)
+        return ""
 
     if feedback:
         add_feedback(feedback)
@@ -172,6 +176,6 @@ Retorne ESTRITAMENTE um JSON no seguinte formato (sem formatação markdown extr
 
 
 def run_ai_feedback_flow() -> List[Dict]:
-    """Fluxo para coletar feedback do responsável e gerar as questões."""
+    """Fluxo headless: coleta feedback via terminal e gera questões. Não usar no modo GUI."""
     teacher_fb = collect_feedback()
     return generate_questions(teacher_feedback=teacher_fb)
